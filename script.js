@@ -1,0 +1,2848 @@
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, getDocs, arrayUnion, writeBatch, increment, query, orderBy, serverTimestamp, where, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        
+        // --- Firebase Config ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAyrEVWBLsUMteYPlhLsM4K7mis86BPnLM",
+            authDomain: "play-and-learn-game-953ed.firebaseapp.com",
+            projectId: "play-and-learn-game-953ed",
+            storageBucket: "play-and-learn-game-953ed.firebasestorage.app",
+            messagingSenderId: "461098214361",
+            appId: "1:461098214361:web:ecfb8fc3bb80f2f1546fc8",
+            measurementId: "G-CY5V2CNTR4"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        // --- I18N Translations ---
+        const translations = {
+            en: {
+                loading: "Loading Game...", welcome: "English Learning Adventure", email: "Email", password: "Password", login: "Login", createAccount: "Create New Account",
+                createAccountTitle: "Create Student Account", username: "Username", backToLogin: "Back to Login",
+                chooseGrade: "Choose Your Grade Level", firstPreparatory: "First Preparatory", secondPreparatory: "Second Preparatory", thirdPreparatory: "Third Preparatory", logout: "Logout",
+                welcomeStudent: "Welcome,", learningStages: "Learning Stages", changeGrade: "Change Grade Level",
+                teacherDashboard: "Teacher Dashboard", studentStats: "Student Statistics", loadingStats: "Loading statistics...", resetStats: "Reset All Statistics", tryGame: "Try Game",
+                cmsTitle: "Curriculum Management System (CMS)", selectGrade: "Select Grade to Edit:", curriculumStages: "Curriculum Stages", soundManagement: "Game Sound Management",
+                addNewStage: "Add New Stage", edit: "Edit", delete: "Delete", activities: "Activities:", addActivity: "Add Activity", vocabulary: "Vocabulary",
+                backToStages: "Back to Stages", noActivities: "No activities in this stage yet.", noStages: "No stages yet. Start by adding one.", startStage: "Start Activities",
+                addNewStageTitle: "Add New Stage", editStageTitle: "Edit Stage Name", stageName: "Stage Name (Lesson)", save: "Save", cancel: "Cancel",
+                addNewActivityTitle: "Add New Activity", editActivityTitle: "Edit Activity", editVocabulary: "Edit Vocabulary", addWord: "Add Word",
+                selectActivityType: "-- Select Activity Type --",
+                multipleChoice: "Multiple Choice", matching: "Matching", arrangeWords: "Arrange Words", completeSentence: "Complete Sentence", traceWord: "Trace Word", pronunciation: "Pronunciation", colorWord: "Color the Word",
+                saveActivity: "Save Activity", confirmTitle: "Are You Sure?", yes: "Yes", no: "No",
+                excellent: "Excellent!", stageComplete: "Stage Complete! Amazing!", purchaseSuccess: "Purchase Successful!",
+                shop: "Shop",
+                fiftyFiftyHint: "50/50 Hint",
+                timeBoost: "Time Boost (+15s)",
+                skipQuestion: "Skip Question",
+                freezeTime: "Freeze Time (10s)",
+                buy: "Buy", use: "Use",
+                correctSound: "Correct Answer", winSound: "Win Stage", wrongSound: "Wrong Answer", clickSound: "UI Click", timerUrgentSound: "Timer Urgent Tick", purchaseSound: "Purchase", coinSound: "Coin Collect", timesUpSound: "Time's Up",
+                backgroundMusic: "Background Music",
+                timeLimit: "Time Limit (seconds, 0 for none)", close: "Close", saveSounds: "Save Sound URLs", soundUrlPlaceholder: "Paste URL, or upload",
+                soundNote: "Note: Control sound volume below. You can paste direct links or upload files to GitHub (requires setup).",
+                audioSource: "Audio Source", textToSpeech: "Text-to-Speech", uploadedAudio: "Uploaded Audio", uploadAudio: "Upload Audio File",
+                word: "Word", image: "Image", audio: "Audio",
+                pronunciationStatus: "Click the mic and say the word!", pronunciationListening: "Listening...", pronunciationSuccess: "Perfect!", pronunciationFail: "Try again!",
+                pronunciationUnsupported: "Sorry, your browser doesn't support speech recognition.", pronunciationUnsupportedCTA: "I have said the word, Next!",
+                timesUp: "Time's Up!",
+                questionAudio: "Question Audio URL (optional)", useTTS: "Use Auto-Voice for Question",
+                startGame: "Start Game", gameInfo: "Game Info", gamePaused: "Game Paused", resume: "Resume",
+                gameInfoManagement: "Game Info Management", saveInfo: "Save Game Info",
+                uploadNew: "Upload New File", browse: "Browse Library", mediaLibrary: "Media Library", uploading: "Uploading...",
+                githubConfig: "GitHub Configuration", githubConfigNote: "These settings are required for the file upload feature and are saved locally in your browser.",
+                saveConfig: "Save Configuration", configSaved: "Configuration saved successfully!",
+                githubConfigWarning: "GitHub upload is not configured. Please fill in your details in the CMS.",
+                itemType: "Item Type", itemValue: "Text or Image URL",
+                prompt: "Prompt", answer: "Answer", text: "Text",
+                leaderboard: "Leaderboard",
+                yourRank: "Your Rank",
+                itemUsed: "Item Used!",
+                shopPriceManagement: "Shop Price Management", savePrices: "Save Prices",
+                indexRequiredTitle: "Database Index Required",
+                indexRequiredBody: "The leaderboard requires a special database index to work. Please click the link that appears in the developer console to create it. It might take a few minutes to build.",
+                duplicate: "Duplicate",
+                stageDuplicated: "Stage duplicated successfully!",
+                activityDuplicated: "Activity duplicated successfully!"
+
+            },
+            ar: {
+                loading: "جاري تحميل اللعبة...", welcome: "مغامرة تعلم اللغة الإنجليزية", email: "البريد الإلكتروني", password: "كلمة المرور", login: "دخول", createAccount: "إنشاء حساب جديد",
+                createAccountTitle: "إنشاء حساب طالبة", username: "اسم المستخدم", backToLogin: "العودة لتسجيل الدخول",
+                chooseGrade: "اختر مرحلتك الدراسية", firstPreparatory: "أول تأهيلي", secondPreparatory: "ثاني تأهيلي", thirdPreparatory: "ثالث تأهيلي", logout: "تسجيل الخروج",
+                welcomeStudent: "أهلاً بكِ،", learningStages: "مراحل التعلم", changeGrade: "تغيير المرحلة الدراسية",
+                teacherDashboard: "لوحة تحكم المعلمة", studentStats: "إحصائيات الطالبات", loadingStats: "جاري تحميل الإحصائيات...", resetStats: "تصفير جميع الإحصائيات", tryGame: "تجربة اللعبة",
+                cmsTitle: "لوحة تحكم المنهج (CMS)", selectGrade: "اختر المرحلة للتعديل:", curriculumStages: "مراحل المنهج", soundManagement: "إدارة أصوات اللعبة",
+                addNewStage: "إضافة مرحلة جديدة", edit: "تعديل", delete: "حذف", activities: "الأنشطة:", addActivity: "إضافة نشاط", vocabulary: "المفردات",
+                backToStages: "العودة للمراحل", noActivities: "لا توجد أنشطة في هذه المرحلة بعد.", noStages: "لا توجد مراحل بعد. ابدأ بإضافة واحدة.", startStage: "ابدأ الأنشطة",
+                addNewStageTitle: "إضافة مرحلة جديدة", editStageTitle: "تعديل اسم المرحلة", stageName: "اسم المرحلة (الدرس)", save: "حفظ", cancel: "إلغاء",
+                addNewActivityTitle: "إضافة نشاط جديد", editActivityTitle: "تعديل النشاط", editVocabulary: "تعديل المفردات", addWord: "إضافة كلمة",
+                selectActivityType: "-- اختر نوع النشاط --",
+                multipleChoice: "اختيار من متعدد", matching: "توصيل", arrangeWords: "ترتيب الكلمات", completeSentence: "أكمل الجملة", traceWord: "الكتابة على النقط", pronunciation: "النطق", colorWord: "تلوين الكلمة",
+                saveActivity: "حفظ النشاط", confirmTitle: "هل أنت متأكد؟", yes: "نعم", no: "لا",
+                excellent: "أحسنتِ!", stageComplete: "اكتملت المرحلة! رائعة!", purchaseSuccess: "تم الشراء بنجاح!",
+                shop: "المتجر",
+                fiftyFiftyHint: "تلميح 50/50",
+                timeBoost: "زيادة الوقت (+15 ث)",
+                skipQuestion: "تخطي السؤال",
+                freezeTime: "تجميد الوقت (10 ث)",
+                buy: "شراء", use: "استخدام",
+                correctSound: "صوت الإجابة الصحيحة", winSound: "صوت الفوز بالمرحلة", wrongSound: "صوت الإجابة الخاطئة", clickSound: "صوت النقر", timerUrgentSound: "صوت المؤقت الحرج", purchaseSound: "صوت الشراء", coinSound: "صوت النقود", timesUpSound: "صوت انتهاء الوقت",
+                backgroundMusic: "الموسيقى التصويرية",
+                timeLimit: "الوقت المحدد (بالثواني، 0 يعني بدون مؤقت)", close: "إغلاق", saveSounds: "حفظ روابط الأصوات", soundUrlPlaceholder: "الصق الرابط، أو ارفع ملف",
+                soundNote: "ملاحظة: تحكم في مستوى الصوت بالأسفل. يمكنك لصق روابط مباشرة أو رفع ملفات إلى جيت هاب (يتطلب إعداد).",
+                audioSource: "مصدر الصوت", textToSpeech: "النطق التلقائي", uploadedAudio: "ملف صوتي مرفوع", uploadAudio: "رفع ملف صوتي",
+                word: "الكلمة", image: "الصورة", audio: "الصوت",
+                pronunciationStatus: "اضغطي على المايك وقولي الكلمة!", pronunciationListening: "يتم الاستماع...", pronunciationSuccess: "ممتاز!", pronunciationFail: "حاولي مرة أخرى!",
+                pronunciationUnsupported: "عذراً، متصفحك لا يدعم ميزة التعرف على الصوت.", pronunciationUnsupportedCTA: "لقد نطقت الكلمة، التالي!",
+                timesUp: "انتهى الوقت!",
+                questionAudio: "رابط صوت السؤال (اختياري)", useTTS: "استخدام الصوت التلقائي للسؤال",
+                startGame: "ابدأ اللعبة", gameInfo: "معلومات اللعبة", gamePaused: "اللعبة متوقفة مؤقتاً", resume: "استئناف",
+                gameInfoManagement: "إدارة معلومات اللعبة", saveInfo: "حفظ معلومات اللعبة",
+                uploadNew: "رفع ملف جديد", browse: "تصفح المكتبة", mediaLibrary: "مكتبة الوسائط", uploading: "جاري الرفع...",
+                githubConfig: "إعدادات GitHub", githubConfigNote: "هذه الإعدادات مطلوبة لميزة رفع الملفات ويتم حفظها محلياً في متصفحك فقط.",
+                saveConfig: "حفظ الإعدادات", configSaved: "تم حفظ الإعدادات بنجاح!",
+                githubConfigWarning: "إعدادات رفع الملفات عبر جيت هاب غير مكتملة. الرجاء تعبئة بياناتك في لوحة التحكم.",
+                itemType: "نوع العنصر", itemValue: "نص أو رابط صورة",
+                prompt: "السؤال", answer: "الجواب", text: "نص",
+                leaderboard: "لوحة الصدارة",
+                yourRank: "ترتيبك هو",
+                itemUsed: "تم استخدام العنصر!",
+                shopPriceManagement: "إدارة أسعار المتجر", savePrices: "حفظ الأسعار",
+                indexRequiredTitle: "فهرس قاعدة البيانات مطلوب",
+                indexRequiredBody: "لوحة الصدارة تحتاج إلى فهرس خاص في قاعدة البيانات للعمل. يرجى الضغط على الرابط الذي يظهر في الـ console لإنشائه. قد يستغرق الأمر بضع دقائق.",
+                duplicate: "استنساخ",
+                stageDuplicated: "تم استنساخ المرحلة بنجاح!",
+                activityDuplicated: "تم استنساخ النشاط بنجاح!"
+            }
+        };
+        
+        // --- Global State ---
+        let currentLanguage = localStorage.getItem('language') || 'en';
+        let isMusicMuted = localStorage.getItem('isMusicMuted') === 'true';
+        let gameSounds = {};
+        let currentUser = null;
+        let currentUserData = null;
+        let currentStageObject = null, currentActivityIndex = 0, currentActivity = null, activityTimer = null, timeLeft = 0;
+        let currentCmsGrade = 'first', curriculumData = {}, editingStageIndex = null, editingActivityIndex = null, currentStageIndexForActivity = null;
+        let isGamePaused = false;
+        let isTimeFrozen = false;
+        let gameHasStarted = false;
+        let activeUrlInput = null;
+        let gameInfoData = null;
+        let shopItemsData = {};
+        
+        // --- Core Functions (UI, Sound, Utils) ---
+        function getTranslation(key) { 
+            return translations[currentLanguage][key] || translations['en'][key] || key; 
+        }
+        
+        function updateLanguage() {
+            document.body.classList.toggle('arabic', currentLanguage === 'ar');
+            document.querySelector('#lang-toggle .lang-text').textContent = currentLanguage === 'ar' ? 'English' : 'العربية';
+            document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = getTranslation(el.getAttribute('data-i18n')));
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => el.placeholder = getTranslation(el.getAttribute('data-i18n-placeholder')));
+            localStorage.setItem('language', currentLanguage);
+        }
+        
+        async function loadGameData() {
+            await Promise.all([
+                loadGameSounds(),
+                loadShopItems()
+            ]);
+            try {
+                const infoDocRef = doc(db, "settings", "gameInfo");
+                const infoDocSnap = await getDoc(infoDocRef);
+                if (infoDocSnap.exists()) {
+                    gameInfoData = infoDocSnap.data();
+                }
+            } catch (error) {
+                console.error("Error pre-loading game info:", error);
+            }
+        }
+
+        // --- Web Audio Synthesizer Fallback ---
+        let audioCtx = null;
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+        
+        function playSynthesizedSound(type) {
+            try {
+                if (!soundEnabled) return;
+                const ctx = getAudioContext();
+                if (!ctx) return;
+                const now = ctx.currentTime;
+                
+                if (type === 'clickSound') {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.exponentialRampToValueAtTime(300, now + 0.05);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'correctSound') {
+                    [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+                        gain.gain.setValueAtTime(0, now + idx * 0.07);
+                        gain.gain.linearRampToValueAtTime(0.25, now + idx * 0.07 + 0.02);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.25);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(now + idx * 0.07);
+                        osc.stop(now + idx * 0.07 + 0.25);
+                    });
+                } else if (type === 'wrongSound') {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(160, now);
+                    osc.frequency.linearRampToValueAtTime(110, now + 0.25);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } else if (type === 'coinSound') {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(987.77, now);
+                    osc.frequency.setValueAtTime(1318.51, now + 0.08);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } else if (type === 'winSound' || type === 'stageCompleteSound') {
+                    [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((freq, idx) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.09);
+                        gain.gain.setValueAtTime(0.3, now + idx * 0.09);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.09 + 0.35);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(now + idx * 0.09);
+                        osc.stop(now + idx * 0.09 + 0.35);
+                    });
+                } else if (type === 'timerSound') {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(800, now);
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.04);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.04);
+                }
+            } catch(e) {
+                console.warn("Synth sound warning:", e);
+            }
+        }
+
+        async function loadGameSounds() {
+            try {
+                const soundDocRef = doc(db, "settings", "sounds");
+                const soundDocSnap = await getDoc(soundDocRef);
+                if (soundDocSnap.exists()) {
+                    const soundData = soundDocSnap.data();
+                    gameSounds = {};
+                    const bgm = document.getElementById('background-music');
+                    for (const key in soundData) {
+                        const soundInfo = soundData[key];
+                        const url = typeof soundInfo === 'string' ? soundInfo : soundInfo?.url;
+                        if (url) {
+                           if (key === 'backgroundMusic') {
+                               bgm.src = url;
+                               bgm.volume = typeof soundInfo === 'object' ? (soundInfo.volume || 0.2) : 0.2; 
+                           } else {
+                               gameSounds[key] = new Audio(url);
+                               gameSounds[key].preload = 'auto';
+                               if (typeof soundInfo === 'object' && soundInfo.volume !== undefined) {
+                                   gameSounds[key].volume = soundInfo.volume;
+                               }
+                           }
+                        }
+                    }
+                }
+            } catch (error) { 
+                console.error("Error loading sounds:", error); 
+            }
+        }
+        
+        function playSound(type) {
+            if (!soundEnabled) return;
+            if (gameSounds[type]) {
+                const sound = gameSounds[type];
+                sound.currentTime = 0;
+                sound.play().catch(e => {
+                    playSynthesizedSound(type);
+                });
+            } else {
+                playSynthesizedSound(type);
+            }
+        }
+
+        function toggleMusic() {
+            isMusicMuted = !isMusicMuted;
+            localStorage.setItem('isMusicMuted', isMusicMuted);
+            updateMusicButtonState();
+            const bgm = document.getElementById('background-music');
+            
+            if (isMusicMuted) {
+                bgm.pause();
+            } else {
+                bgm.play().catch(e => console.log("BGM play needs user interaction first."));
+            }
+        }
+        
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.toggle('hidden', page.id !== pageId));
+        }
+        
+        function setLoadingState(button, isLoading, textKey = null) {
+            const text = button.querySelector('.btn-text');
+            const loader = button.querySelector('.btn-loader');
+            button.disabled = isLoading;
+            if (text) {
+                if(isLoading && textKey) {
+                    text.textContent = getTranslation(textKey);
+                } else if (!isLoading && button.dataset.originalText) {
+                    text.textContent = button.dataset.originalText;
+                }
+                text.classList.toggle('hidden', isLoading);
+            }
+            if (loader) loader.classList.toggle('hidden', !isLoading);
+        }
+        
+        function showToast(messageKey, type = 'success') {
+            const toastContainer = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
+            if(type === 'error') toast.style.background = 'linear-gradient(135deg, var(--danger-color), #d32f2f)';
+            toast.textContent = getTranslation(messageKey);
+            toastContainer.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+        
+        function triggerWinEffect() {
+            const container = document.getElementById('effect-container');
+            for (let i = 0; i < 30; i++) {
+                const star = document.createElement('div');
+                star.className = 'falling-star';
+                star.style.left = `${Math.random() * 100}vw`;
+                star.style.animationDelay = `${Math.random() * 2}s`;
+                star.style.width = `${Math.random() * 20 + 20}px`;
+                star.style.height = star.style.width;
+                star.style.animationDuration = `${Math.random() * 3 + 3}s`;
+                container.appendChild(star);
+                setTimeout(() => star.remove(), 6000);
+            }
+        }
+
+        function triggerPurchaseEffect() {
+            const container = document.getElementById('effect-container');
+            const target = document.querySelector('#shop-btn') || document.querySelector('#activity-shop-btn');
+            if (!target) return;
+            const targetRect = target.getBoundingClientRect();
+
+            for (let i = 0; i < 15; i++) {
+                const purchaseIcon = document.createElement('div');
+                purchaseIcon.className = 'flying-purchase';
+                const icons = ['fa-shopping-bag', 'fa-receipt', 'fa-box-open'];
+                purchaseIcon.innerHTML = `<i class="fas ${icons[i % icons.length]}"></i>`;
+                const startX = window.innerWidth / 2;
+                const startY = window.innerHeight * 0.8;
+                purchaseIcon.style.left = `${startX}px`;
+                purchaseIcon.style.top = `${startY}px`;
+                purchaseIcon.style.transform = `translate(${Math.random() * 100 - 50}px, ${Math.random() * 100 - 50}px) scale(2)`;
+                purchaseIcon.style.opacity = '1';
+                
+                container.appendChild(purchaseIcon);
+                
+                setTimeout(() => {
+                    purchaseIcon.style.left = `${targetRect.left + targetRect.width / 2}px`;
+                    purchaseIcon.style.top = `${targetRect.top + targetRect.height / 2}px`;
+                    purchaseIcon.style.transform = 'scale(0.5)';
+                    purchaseIcon.style.opacity = '0';
+                }, 50 + i * 40);
+                
+                setTimeout(() => purchaseIcon.remove(), 1100 + i * 40);
+            }
+        }
+        
+        function triggerCoinCollectionEffect(startElement = null) {
+            const container = document.getElementById('effect-container');
+            const target = document.querySelector('#activity-coins') || document.querySelector('#student-coins');
+            if (!target) return;
+            playSound('coinSound');
+
+            target.classList.add('animate-counter-bounce');
+            setTimeout(() => target.classList.remove('animate-counter-bounce'), 600);
+        
+            const targetRect = target.getBoundingClientRect();
+        
+            let startX, startY;
+            if (startElement) {
+                const startRect = startElement.getBoundingClientRect();
+                startX = startRect.left + startRect.width / 2;
+                startY = startRect.top + startRect.height / 2;
+            } else {
+                startX = window.innerWidth / 2;
+                startY = window.innerHeight / 2;
+            }
+            
+            const endX = targetRect.left + targetRect.width / 2;
+            const endY = targetRect.top + targetRect.height / 2;
+        
+            for (let i = 0; i < 10; i++) {
+                const coin = document.createElement('div');
+                coin.className = 'flying-coin';
+        
+                const initialOffsetX = Math.random() * 100 - 50;
+                const initialOffsetY = Math.random() * 100 - 50;
+                coin.style.left = `${startX + initialOffsetX}px`;
+                coin.style.top = `${startY + initialOffsetY}px`;
+        
+                coin.style.setProperty('--start-tx', `0px`);
+                coin.style.setProperty('--start-ty', `0px`);
+                
+                const endTx = endX - (startX + initialOffsetX);
+                const endTy = endY - (startY + initialOffsetY);
+        
+                coin.style.setProperty('--mid-tx', `${endTx * 0.3 + Math.random() * 80 - 40}px`);
+                coin.style.setProperty('--mid-ty', `${endTy * 0.3 + Math.random() * 80 - 40}px`);
+                coin.style.setProperty('--mid2-tx', `${endTx * 0.7 + Math.random() * 60 - 30}px`);
+                coin.style.setProperty('--mid2-ty', `${endTy * 0.7 + Math.random() * 60 - 30}px`);
+                coin.style.setProperty('--end-tx', `${endTx}px`);
+                coin.style.setProperty('--end-ty', `${endTy}px`);
+        
+                coin.style.animationDelay = `${i * 0.05}s`;
+                
+                container.appendChild(coin);
+                
+                setTimeout(() => coin.remove(), 1000 + i * 50);
+            }
+            
+            setTimeout(() => {
+                createParticleEffect(endX, endY, '#ffd700');
+            }, 700);
+        }
+        
+        function createParticleEffect(x, y, color) {
+            const container = document.getElementById('effect-container');
+            for (let i = 0; i < 15; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = `${x}px`;
+                particle.style.top = `${y}px`;
+                particle.style.width = `${Math.random() * 8 + 5}px`;
+                particle.style.height = particle.style.width;
+                particle.style.borderRadius = '50%';
+                particle.style.backgroundColor = color;
+                
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = Math.random() * 100 + 50;
+                particle.style.setProperty('--tx', `${Math.cos(angle) * velocity}px`);
+                particle.style.setProperty('--ty', `${Math.sin(angle) * velocity}px`);
+                
+                container.appendChild(particle);
+                setTimeout(() => particle.remove(), 1000);
+            }
+        }
+
+        function triggerScreenFlash(colorClass) {
+            const flash = document.createElement('div');
+            flash.className = `screen-flash ${colorClass}`;
+            document.body.appendChild(flash);
+            setTimeout(() => flash.remove(), 700);
+        }
+        
+        function showEncouragementModal(isCorrect) {
+            const modal = document.getElementById('encouragement-modal');
+            const iconContainer = document.getElementById('encouragement-icon-container');
+            const messageEl = document.getElementById('encouragement-message');
+            const card = modal.querySelector('.card');
+
+            const name = currentUserData.username || 'Hero';
+            const message = isCorrect
+                ? (currentLanguage === 'ar' ? `!رائعة يا ${name}` : `Excellent, ${name}!`)
+                : (currentLanguage === 'ar' ? `!حاولي مرة أخرى يا ${name}` : `Keep trying, ${name}!`);
+            
+            const icon = isCorrect
+                ? '<i class="fas fa-star text-yellow-400 text-7xl animate-ping opacity-75 absolute"></i><i class="fas fa-star text-yellow-400 text-8xl relative"></i>'
+                : '<i class="fas fa-hand-holding-heart text-pink-400 text-8xl"></i>';
+
+            card.style.borderImageSource = isCorrect 
+                ? 'linear-gradient(to right, var(--success-color), var(--secondary-color))' 
+                : 'linear-gradient(to right, var(--danger-color), var(--warning-color))';
+
+            iconContainer.innerHTML = icon;
+            messageEl.textContent = message;
+            messageEl.style.color = isCorrect ? 'var(--success-color)' : 'var(--danger-color)';
+            
+            modal.classList.remove('hidden');
+
+            if (isCorrect) {
+                createParticleEffect(window.innerWidth / 2, window.innerHeight * 0.4, 'var(--success-color)');
+                setTimeout(() => triggerCoinCollectionEffect(card), 500);
+            }
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 2500);
+        }
+
+        const confirmModal = document.getElementById('confirm-modal');
+        function showConfirm(textKey, onConfirm) {
+            document.getElementById('confirm-modal-text').textContent = getTranslation(textKey);
+            confirmModal.classList.remove('hidden');
+            const yesBtn = document.getElementById('confirm-modal-yes');
+            
+            const yesHandler = () => {
+                if (onConfirm) onConfirm();
+                cleanup();
+            };
+            const noHandler = () => { cleanup(); };
+            const cleanup = () => {
+                confirmModal.classList.add('hidden');
+                yesBtn.removeEventListener('click', yesHandler);
+                document.getElementById('confirm-modal-no').removeEventListener('click', noHandler);
+            };
+            yesBtn.addEventListener('click', yesHandler, { once: true });
+            document.getElementById('confirm-modal-no').addEventListener('click', noHandler, { once: true });
+        }
+        
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = error => reject(error);
+            });
+        }
+        
+        function updateCoinsDisplay() {
+            document.querySelectorAll('.coins-count').forEach(span => span.textContent = currentUserData.coins);
+        }
+        
+        // --- Authentication & Routing ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                try {
+                    const userDocRef = doc(db, "users", user.uid);
+                    const userDocSnap = await getDoc(userDocRef);
+                    if (userDocSnap.exists()) {
+                        currentUserData = { id: user.uid, ...userDocSnap.data() };
+                    } else {
+                        await setDoc(userDocRef, { 
+                            username: user.displayName || 'New Student', email: user.email, role: 'student', 
+                            grade: null, progress: {}, coins: 0, inventory: {} 
+                        });
+                        const newUserSnap = await getDoc(userDocRef);
+                        currentUserData = { id: user.uid, ...newUserSnap.data() };
+                    }
+                } catch(err) {
+                    console.warn("Firestore user doc fetch warning:", err);
+                }
+                document.getElementById('loader').classList.add('hidden');
+                if (gameHasStarted) {
+                    navigateToUserPage();
+                } else {
+                    showPage('start-page');
+                }
+            } else {
+                currentUser = null;
+                currentUserData = null;
+                document.getElementById('loader').classList.add('hidden');
+                if (gameHasStarted) {
+                    showPage('login-page');
+                } else {
+                    showPage('start-page');
+                }
+            }
+            updateLanguage();
+        });
+
+        // Safety fallback timer for loader
+        setTimeout(() => {
+            const loader = document.getElementById('loader');
+            if (loader && !loader.classList.contains('hidden')) {
+                loader.classList.add('hidden');
+                if (!gameHasStarted) showPage('start-page');
+            }
+        }, 2500);
+        
+        function navigateToUserPage() {
+            if (!currentUserData) { showPage('login-page'); return; }
+            switch(currentUserData.role) {
+                case 'admin':
+                    showPage('admin-cms-page');
+                    loadCmsData();
+                    break;
+                case 'teacher':
+                    showPage('teacher-dashboard-page');
+                    loadTeacherStats();
+                    break;
+                default:
+                    if (currentUserData.grade) {
+                        showPage('student-stages-page');
+                        loadStudentStages(currentUserData.grade);
+                    } else {
+                        showPage('grade-selection-page');
+                    }
+            }
+        }
+        
+        // --- Global Window Click Handlers ---
+        window.handleStartGameClick = function() {
+            gameHasStarted = true;
+            const bgm = document.getElementById('background-music');
+            
+            if (!isMusicMuted && bgm && bgm.getAttribute('src')) {
+                try {
+                    const playPromise = bgm.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(error => {
+                            console.log("Autoplay was prevented.");
+                            isMusicMuted = true;
+                            updateMusicButtonState();
+                        });
+                    }
+                } catch(e) {
+                    console.warn("BGM play error:", e);
+                }
+            }
+            
+            playSound('clickSound');
+
+            if (currentUser) {
+                navigateToUserPage();
+            } else {
+                showPage('login-page');
+            }
+        };
+
+        window.showInfoModal = function() {
+            playSound('clickSound');
+            const modal = document.getElementById('info-modal');
+            const infoTextEl = document.getElementById('info-modal-text');
+
+            if (gameInfoData) {
+                const infoText = (currentLanguage === 'ar' ? gameInfoData.infoText_ar : gameInfoData.infoText_en) || gameInfoData.infoText_en || "English Learning Adventure for Students.";
+                infoTextEl.textContent = infoText;
+            } else {
+                infoTextEl.textContent = currentLanguage === 'ar' ? "مغامرة تعلم اللغة الإنجليزية للطلاب والطالبات. قم باختيار المرحلة وابدأ رحلة التعلم الممتعة!" : "English Learning Adventure for Students. Choose your grade and start learning!";
+            }
+            if (modal) modal.classList.remove('hidden');
+        };
+
+        window.closeInfoModal = function() {
+            playSound('clickSound');
+            const modal = document.getElementById('info-modal');
+            if (modal) modal.classList.add('hidden');
+        };
+
+        window.handleLoginClick = function() {
+            handleLogin();
+        };
+        window.handleRegisterClick = function() {
+            playSound('clickSound');
+            showPage('register-page');
+        };
+        window.handleCreateAccountClick = function() {
+            handleRegistration();
+        };
+        window.handleBackToLoginClick = function() {
+            playSound('clickSound');
+            showPage('login-page');
+        };
+
+        // --- Event Listeners Setup ---
+        function setupEventListeners() {
+            document.getElementById('lang-toggle').addEventListener('click', () => { 
+                playSound('clickSound'); 
+                currentLanguage = (currentLanguage === 'en') ? 'ar' : 'en'; 
+                updateLanguage(); 
+            });
+            
+            document.getElementById('sound-toggle').addEventListener('click', toggleMusic);
+
+            const startBtn = document.getElementById('start-game-btn');
+            if (startBtn) startBtn.addEventListener('click', window.handleStartGameClick);
+
+            const infoBtn = document.getElementById('info-btn');
+            if (infoBtn) infoBtn.addEventListener('click', window.showInfoModal);
+
+            const closeInfoBtn = document.getElementById('close-info-btn');
+            if (closeInfoBtn) closeInfoBtn.addEventListener('click', window.closeInfoModal);
+            
+            document.getElementById('leaderboard-btn').addEventListener('click', showLeaderboard);
+            document.getElementById('close-leaderboard-btn').addEventListener('click', () => {
+                playSound('clickSound');
+                document.getElementById('leaderboard-modal').classList.add('hidden');
+            });
+
+            document.getElementById('pause-game-btn').addEventListener('click', pauseGame);
+            document.getElementById('resume-game-btn').addEventListener('click', resumeGame);
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+            
+            document.getElementById('login-btn').addEventListener('click', handleLogin);
+            document.getElementById('create-account-btn').addEventListener('click', handleRegistration);
+            document.getElementById('register-btn').addEventListener('click', () => { 
+                playSound('clickSound'); 
+                showPage('register-page'); 
+            });
+            
+            document.getElementById('back-to-login').addEventListener('click', (e) => { 
+                e.preventDefault(); 
+                playSound('clickSound'); 
+                showPage('login-page'); 
+            });
+            
+            document.querySelectorAll('.password-toggle').forEach(toggle => {
+                toggle.addEventListener('click', () => {
+                    const passwordInput = toggle.previousElementSibling;
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    toggle.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+                });
+            });
+            
+            ['student-logout-btn', 'teacher-logout-btn', 'admin-logout-btn', 'main-logout-btn'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.addEventListener('click', () => { 
+                    playSound('clickSound'); 
+                    gameHasStarted = false;
+                    document.getElementById('background-music').pause();
+                    signOut(auth); 
+                });
+            });
+            
+            document.getElementById('teacher-play-game-btn').addEventListener('click', () => { 
+                playSound('clickSound'); 
+                currentUserData.grade = null; 
+                showPage('grade-selection-page'); 
+            });
+            
+            document.getElementById('admin-play-game-btn').addEventListener('click', () => { 
+                playSound('clickSound'); 
+                currentUserData.grade = null; 
+                showPage('grade-selection-page'); 
+            });
+            
+            document.getElementById('back-to-grades').addEventListener('click', () => { 
+                playSound('clickSound'); 
+                showPage('grade-selection-page'); 
+            });
+            
+            document.getElementById('back-to-stages').addEventListener('click', () => { 
+                if (activityTimer) clearInterval(activityTimer); 
+                isTimeFrozen = false;
+                playSound('clickSound'); 
+                showPage('student-stages-page'); 
+            });
+            
+            document.querySelectorAll('.grade-btn').forEach(btn => btn.addEventListener('click', handleGradeSelection));
+            
+            document.getElementById('reset-stats-btn').addEventListener('click', handleResetStats);
+            
+            // CMS
+            document.getElementById('save-github-config-btn').addEventListener('click', saveGitHubConfig);
+            document.getElementById('cms-grade-select').addEventListener('change', (e) => loadCmsForGrade(e.target.value));
+            document.getElementById('save-sounds-btn').addEventListener('click', handleSaveSounds);
+            document.getElementById('save-info-btn').addEventListener('click', handleSaveGameInfo);
+            document.getElementById('save-prices-btn').addEventListener('click', handleSaveShopPrices);
+            
+            // Modals
+            document.getElementById('save-stage-btn').addEventListener('click', handleSaveStage);
+            document.getElementById('cancel-stage-btn').addEventListener('click', () => document.getElementById('stage-modal').classList.add('hidden'));
+            document.getElementById('save-activity-btn').addEventListener('click', handleSaveActivity);
+            document.getElementById('cancel-activity-btn').addEventListener('click', () => document.getElementById('activity-modal').classList.add('hidden'));
+            document.getElementById('activity-type-select').addEventListener('change', renderActivityForm);
+            document.getElementById('save-vocab-btn').addEventListener('click', handleSaveVocabulary);
+            document.getElementById('cancel-vocab-btn').addEventListener('click', () => document.getElementById('vocab-modal').classList.add('hidden'));
+            document.getElementById('add-vocab-word-btn').addEventListener('click', addVocabWordToEditor);
+            
+            document.getElementById('shop-btn').addEventListener('click', openShop);
+            document.getElementById('activity-shop-btn').addEventListener('click', openShop);
+            document.getElementById('close-shop-btn').addEventListener('click', () => { 
+                playSound('clickSound'); 
+                document.getElementById('shop-modal').classList.add('hidden'); 
+            });
+            document.getElementById('close-library-btn').addEventListener('click', () => {
+                document.getElementById('media-library-modal').classList.add('hidden');
+            });
+        }
+        
+        // --- Handler Functions ---
+        
+        function handleVisibilityChange() {
+            const pausablePages = ['student-stages-page', 'vocabulary-page', 'game-page'];
+            const currentPage = document.querySelector('.page:not(.hidden)');
+            
+            if (document.hidden && currentPage && pausablePages.includes(currentPage.id) && !isGamePaused) {
+                pauseGame();
+            }
+        }
+        
+        function pauseGame() {
+            if (isGamePaused) return;
+            isGamePaused = true;
+            if (activityTimer) clearInterval(activityTimer);
+            document.getElementById('background-music').pause();
+            document.getElementById('pause-modal').classList.remove('hidden');
+        }
+
+        function resumeGame() {
+            playSound('clickSound');
+            isGamePaused = false;
+            document.getElementById('pause-modal').classList.add('hidden');
+            if (!isMusicMuted) document.getElementById('background-music').play();
+
+            if (!document.getElementById('game-page').classList.contains('hidden') && currentActivity && currentActivity.data.timeLimit > 0 && !isTimeFrozen) {
+                 startTimer();
+            }
+        }
+
+        function startTimer() {
+            if (activityTimer) clearInterval(activityTimer);
+            activityTimer = setInterval(() => {
+                if (isTimeFrozen || isGamePaused) return;
+                timeLeft--;
+                document.getElementById('timer-countdown').textContent = timeLeft;
+                if (timeLeft > 0 && timeLeft <= 4) {
+                    playSound('timerUrgentSound');
+                    document.getElementById('timer-display').classList.add('low-time');
+                }
+                if (timeLeft <= 0) {
+                    clearInterval(activityTimer);
+                    handleTimeUp();
+                }
+            }, 1000);
+        }
+
+        function showInfoModal() {
+            playSound('clickSound');
+            const modal = document.getElementById('info-modal');
+            const infoTextEl = document.getElementById('info-modal-text');
+
+            if (gameInfoData) {
+                const infoText = (currentLanguage === 'ar' ? gameInfoData.infoText_ar : gameInfoData.infoText_en) || gameInfoData.infoText_en || "Info not available.";
+                infoTextEl.textContent = infoText;
+            } else {
+                infoTextEl.textContent = getTranslation('loading');
+            }
+            modal.classList.remove('hidden');
+        }
+        
+        function handleLogin() {
+            playSound('clickSound');
+            gameHasStarted = true;
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const email = emailInput ? emailInput.value.trim() : '';
+            const password = passwordInput ? passwordInput.value.trim() : '';
+            const errorMsg = document.getElementById('login-error');
+            const loginBtn = document.getElementById('login-btn');
+            errorMsg.classList.add('hidden');
+
+            if (!email || !password) {
+                errorMsg.textContent = currentLanguage === 'ar' ? "يرجى إدخال البريد الإلكتروني وكلمة المرور." : "Please enter email and password.";
+                errorMsg.classList.remove('hidden');
+                playSound('wrongSound');
+                return;
+            }
+
+            if (!loginBtn.dataset.originalText) {
+                const btnTextEl = loginBtn.querySelector('.btn-text');
+                if (btnTextEl) loginBtn.dataset.originalText = btnTextEl.textContent;
+            }
+            setLoadingState(loginBtn, true);
+
+            signInWithEmailAndPassword(auth, email, password)
+                .then(async (userCredential) => {
+                    playSound('correctSound');
+                    currentUser = userCredential.user;
+                    try {
+                        const userDocRef = doc(db, "users", currentUser.uid);
+                        const userDocSnap = await getDoc(userDocRef);
+                        if (userDocSnap.exists()) {
+                            currentUserData = { id: currentUser.uid, ...userDocSnap.data() };
+                        }
+                    } catch(e) {
+                        console.warn("Could not fetch user doc:", e);
+                    }
+                    navigateToUserPage();
+                })
+                .catch(error => {
+                    console.error("Login error:", error);
+                    let text = "Error: " + error.code;
+                    if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                        text = currentLanguage === 'ar' ? "البريد الإلكتروني أو كلمة المرور غير صحيحة." : "Invalid email or password.";
+                    } else if (error.code === 'auth/invalid-email') {
+                        text = currentLanguage === 'ar' ? "صيغة البريد الإلكتروني غير صحيحة." : "Invalid email format.";
+                    } else if (error.code === 'auth/network-request-failed') {
+                        text = currentLanguage === 'ar' ? "فشل الاتصال بالشبكة. تحقق من الاتصال بالإنترنت." : "Network error. Please check your connection.";
+                    }
+                    errorMsg.textContent = text;
+                    errorMsg.classList.remove('hidden');
+                    playSound('wrongSound');
+                })
+                .finally(() => setLoadingState(loginBtn, false));
+        }
+        
+        function handleRegistration() {
+            playSound('clickSound');
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const username = document.getElementById('register-username').value;
+            const errorMsg = document.getElementById('register-error');
+            const createBtn = document.getElementById('create-account-btn');
+            errorMsg.classList.add('hidden');
+            if(!username) {
+                errorMsg.textContent = "Please enter a username.";
+                errorMsg.classList.remove('hidden');
+                playSound('wrongSound');
+                return;
+            }
+            if(!createBtn.dataset.originalText) createBtn.dataset.originalText = createBtn.querySelector('.btn-text').textContent;
+            setLoadingState(createBtn, true);
+            createUserWithEmailAndPassword(auth, email, password)
+                .then(async (userCredential) => {
+                    await setDoc(doc(db, "users", userCredential.user.uid), { 
+                        username: username, email: email, role: 'student', grade: null, progress: {}, coins: 0, inventory: {} 
+                    });
+                    playSound('correctSound');
+                })
+                .catch(error => {
+                    errorMsg.textContent = "Error: " + error.code;
+                    errorMsg.classList.remove('hidden');
+                    playSound('wrongSound');
+                })
+                .finally(() => setLoadingState(createBtn, false));
+        }
+        
+        async function handleGradeSelection(e) {
+            playSound('clickSound');
+            const grade = e.currentTarget.dataset.grade;
+            try {
+                const userRef = doc(db, "users", currentUser.uid);
+                await updateDoc(userRef, { grade });
+                currentUserData.grade = grade;
+                showPage('student-stages-page');
+                loadStudentStages(grade);
+            } catch (error) { 
+                console.error("Error updating grade:", error);
+                alert("Error updating grade: " + error.message);
+            }
+        }
+        
+        async function loadTeacherStats() {
+            const statsContainer = document.getElementById('stats-container');
+            statsContainer.innerHTML = '<div class="loader"></div>';
+            try {
+                const usersCollection = collection(db, 'users');
+                const userSnapshot = await getDocs(usersCollection);
+                const students = [];
+                userSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.role === 'student') {
+                        students.push({ id: doc.id, ...data });
+                    }
+                });
+                
+                if (students.length === 0) {
+                    statsContainer.innerHTML = '<p class="text-gray-600">No student data available yet.</p>';
+                    return;
+                }
+                
+                let statsHtml = '<div class="overflow-x-auto"><table class="w-full text-left"><thead><tr class="border-b"><th class="p-2">Username</th><th class="p-2">Grade</th><th class="p-2">Coins</th><th class="p-2">Completed Stages</th></tr></thead><tbody>';
+                students.forEach(student => {
+                    const grade = student.grade || 'N/A';
+                    const completed = student.progress?.[grade]?.completedStages?.length || 0;
+                    statsHtml += `<tr class="border-b">
+                        <td class="p-2">${student.username}</td>
+                        <td class="p-2">${getTranslation(grade)}</td>
+                        <td class="p-2">${student.coins || 0}</td>
+                        <td class="p-2">${completed}</td>
+                    </tr>`;
+                });
+                statsHtml += '</tbody></table></div>';
+                statsContainer.innerHTML = statsHtml;
+            } catch (error) {
+                console.error("Error fetching stats:", error);
+                statsContainer.innerHTML = '<p class="text-red-500">Error loading statistics. Please try again later.</p>';
+            }
+        }
+        
+        function handleResetStats() {
+             playSound('clickSound');
+             showConfirm("This will reset ALL student progress and coins. Are you sure?", async () => {
+                try {
+                    const usersCollection = collection(db, 'users');
+                    const userSnapshot = await getDocs(usersCollection);
+                    const batch = writeBatch(db);
+                    userSnapshot.forEach(userDoc => {
+                        if(userDoc.data().role === 'student') {
+                           batch.update(doc(db, "users", userDoc.id), { progress: {}, coins: 0, inventory: {} });
+                        }
+                    });
+                    await batch.commit();
+                    showToast("All student statistics have been reset.");
+                    loadTeacherStats();
+                } catch (error) {
+                    console.error("Error resetting stats:", error);
+                    showToast("An error occurred while resetting statistics.");
+                }
+             });
+        }
+        
+        // --- CMS Functions ---
+        async function loadCmsData() {
+            loadGitHubConfig();
+            loadCmsForGrade('first');
+            loadSoundUrlManager();
+            loadGameInfo();
+            loadShopPriceManager();
+        }
+
+        async function loadCmsForGrade(grade) {
+            currentCmsGrade = grade;
+            document.getElementById('cms-grade-select').value = grade;
+            const editor = document.getElementById('stages-editor');
+            editor.innerHTML = '<div class="loader"></div>';
+            const curriculumRef = doc(db, "curriculum", grade);
+            const curriculumSnap = await getDoc(curriculumRef);
+            curriculumData = curriculumSnap.exists() ? curriculumSnap.data() : { stages: [] };
+            if (!curriculumSnap.exists()) {
+                await setDoc(curriculumRef, curriculumData);
+            }
+            renderCmsEditor();
+        }
+        
+        function renderCmsEditor() {
+            const editor = document.getElementById('stages-editor');
+            editor.innerHTML = `<div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold">${getTranslation('curriculumStages')}</h3>
+                    <button id="add-stage-btn" class="btn btn-primary"><i class="fas fa-plus mr-2"></i>${getTranslation('addNewStage')}</button>
+                </div>
+                <div id="cms-stages-list" class="space-y-6"></div>`;
+            
+            const stagesList = document.getElementById('cms-stages-list');
+            if (curriculumData.stages && curriculumData.stages.length > 0) {
+                 curriculumData.stages.forEach((stage, index) => {
+                    const stageHtml = `
+                        <div class="p-5 border-2 border-purple-200 rounded-xl bg-purple-50 text-left stage-draggable" draggable="true" data-index="${index}">
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="text-xl font-semibold text-purple-800 flex items-center">
+                                    <i class="fas fa-grip-vertical mr-3 cursor-grab text-gray-400"></i>
+                                    ${stage.name}
+                                </h4>
+                                <div class="flex gap-2">
+                                    <button class="edit-stage-btn btn btn-secondary btn-sm" data-index="${index}" title="${getTranslation('edit')}"><i class="fas fa-edit"></i></button>
+                                    <button class="duplicate-stage-btn btn btn-warning btn-sm" data-index="${index}" title="${getTranslation('duplicate')}"><i class="fas fa-copy"></i></button>
+                                    <button class="delete-stage-btn btn btn-danger btn-sm" data-index="${index}" title="${getTranslation('delete')}"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                            <h5 class="font-bold text-purple-700 mb-2">${getTranslation('vocabulary')}:</h5>
+                            <button class="edit-vocab-btn btn btn-secondary w-full mb-4" data-stage-index="${index}"><i class="fas fa-spell-check mr-2"></i> ${getTranslation('editVocabulary')} (${stage.vocabulary?.length || 0})</button>
+                            
+                            <h5 class="font-bold text-purple-700 mb-2">${getTranslation('activities')}:</h5>
+                            <div class="activity-list pl-4 mt-2 bg-white p-3 rounded-lg" data-stage-index="${index}">
+                                ${(stage.activities && stage.activities.length > 0) ? stage.activities.map((act, actIndex) => `
+                                <div class="flex justify-between items-center py-2 border-b draggable" draggable="true" data-activity-index="${actIndex}">
+                                    <span><i class="fas fa-grip-vertical mr-2 text-gray-400"></i>${actIndex + 1}- ${getTranslation(act.type)}</span>
+                                    <div>
+                                      <button class="edit-activity-btn text-blue-500 hover:text-blue-700 p-2" data-stage-index="${index}" data-activity-index="${actIndex}" title="${getTranslation('edit')}"><i class="fas fa-edit"></i></button>
+                                      <button class="duplicate-activity-btn text-orange-500 hover:text-orange-700 p-2" data-stage-index="${index}" data-activity-index="${actIndex}" title="${getTranslation('duplicate')}"><i class="fas fa-copy"></i></button>
+                                      <button class="delete-activity-btn text-red-500 hover:text-red-700 p-2" data-stage-index="${index}" data-activity-index="${actIndex}" title="${getTranslation('delete')}"><i class="fas fa-times"></i></button>
+                                    </div>
+                                </div>`).join('') : `<p class="text-gray-500 italic">${getTranslation('noActivities')}</p>`}
+                            </div>
+                            <button class="add-activity-btn btn btn-primary mt-3 w-full" data-stage-index="${index}"><i class="fas fa-plus mr-2"></i>${getTranslation('addActivity')}</button>
+                        </div>`;
+                    stagesList.insertAdjacentHTML('beforeend', stageHtml);
+                 });
+            } else {
+                 stagesList.innerHTML = `<p class="text-center text-gray-500">${getTranslation('noStages')}</p>`;
+            }
+            
+            document.getElementById('add-stage-btn').addEventListener('click', () => openStageModal(null));
+            document.querySelectorAll('.edit-stage-btn').forEach(btn => btn.addEventListener('click', (e) => openStageModal(parseInt(e.currentTarget.dataset.index))));
+            document.querySelectorAll('.delete-stage-btn').forEach(btn => btn.addEventListener('click', (e) => deleteStage(parseInt(e.currentTarget.dataset.index))));
+            document.querySelectorAll('.duplicate-stage-btn').forEach(btn => btn.addEventListener('click', (e) => duplicateStage(parseInt(e.currentTarget.dataset.index))));
+            document.querySelectorAll('.add-activity-btn').forEach(btn => btn.addEventListener('click', (e) => openActivityModal(parseInt(e.currentTarget.dataset.stageIndex))));
+            document.querySelectorAll('.edit-activity-btn').forEach(btn => btn.addEventListener('click', (e) => openActivityModalForEdit(parseInt(e.currentTarget.dataset.stageIndex), parseInt(e.currentTarget.dataset.activityIndex))));
+            document.querySelectorAll('.delete-activity-btn').forEach(btn => btn.addEventListener('click', (e) => deleteActivity(parseInt(e.currentTarget.dataset.stageIndex), parseInt(e.currentTarget.dataset.activityIndex))));
+            document.querySelectorAll('.duplicate-activity-btn').forEach(btn => btn.addEventListener('click', (e) => duplicateActivity(parseInt(e.currentTarget.dataset.stageIndex), parseInt(e.currentTarget.dataset.activityIndex))));
+            document.querySelectorAll('.edit-vocab-btn').forEach(btn => btn.addEventListener('click', (e) => openVocabModal(parseInt(e.currentTarget.dataset.stageIndex))));
+            setupActivityDragAndDrop();
+            setupStageDragAndDrop();
+        }
+        
+        async function duplicateStage(index) {
+            playSound('clickSound');
+            const originalStage = curriculumData.stages[index];
+            const newStage = JSON.parse(JSON.stringify(originalStage));
+            
+            newStage.name = `${originalStage.name} - Copy`;
+            newStage.id = `stage_${Date.now()}`;
+
+            curriculumData.stages.splice(index + 1, 0, newStage);
+            
+            await updateCurriculumInDb();
+            renderCmsEditor();
+            showToast('stageDuplicated');
+        }
+
+        async function duplicateActivity(stageIndex, activityIndex) {
+            playSound('clickSound');
+            const originalActivity = curriculumData.stages[stageIndex].activities[activityIndex];
+            const newActivity = JSON.parse(JSON.stringify(originalActivity));
+
+            curriculumData.stages[stageIndex].activities.splice(activityIndex + 1, 0, newActivity);
+
+            await updateCurriculumInDb();
+            renderCmsEditor();
+            showToast('activityDuplicated');
+        }
+        
+        function setupStageDragAndDrop() {
+            const container = document.getElementById('cms-stages-list');
+            if (!container) return;
+            let draggedItem = null;
+
+            container.addEventListener('dragstart', e => {
+                if (e.target.classList.contains('stage-draggable')) {
+                    draggedItem = e.target;
+                    setTimeout(() => e.target.classList.add('dragging-stage'), 0);
+                }
+            });
+
+            container.addEventListener('dragend', e => {
+                if (draggedItem) {
+                    draggedItem.classList.remove('dragging-stage');
+                    draggedItem = null;
+                }
+            });
+
+            container.addEventListener('dragover', e => {
+                e.preventDefault();
+                const afterElement = getDragAfterElement(container, e.clientY);
+                const currentDraggable = document.querySelector('.dragging-stage');
+                if (currentDraggable) {
+                    if (afterElement == null) {
+                        container.appendChild(currentDraggable);
+                    } else {
+                        container.insertBefore(currentDraggable, afterElement);
+                    }
+                }
+            });
+                
+            container.addEventListener('drop', async e => {
+                e.preventDefault();
+                if (!draggedItem) return;
+                
+                const newOrder = Array.from(container.querySelectorAll('.stage-draggable')).map(el => {
+                    return curriculumData.stages[parseInt(el.dataset.index)];
+                });
+
+                curriculumData.stages = newOrder;
+                
+                await updateCurriculumInDb();
+                renderCmsEditor(); // Re-render to update indexes and ensure consistency
+            });
+        }
+
+
+        function setupActivityDragAndDrop() {
+            const lists = document.querySelectorAll('.activity-list');
+            let draggedItem = null;
+
+            lists.forEach(list => {
+                list.addEventListener('dragstart', e => {
+                    if (e.target.classList.contains('draggable')) {
+                        draggedItem = e.target;
+                        setTimeout(() => e.target.classList.add('dragging'), 0);
+                    }
+                });
+
+                list.addEventListener('dragend', e => {
+                    if (draggedItem) {
+                        draggedItem.classList.remove('dragging');
+                        draggedItem = null;
+                    }
+                });
+
+                list.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    const afterElement = getDragAfterElement(list, e.clientY);
+                    const currentDraggable = document.querySelector('.dragging');
+                    if(currentDraggable) {
+                        if (afterElement == null) {
+                            list.appendChild(currentDraggable);
+                        } else {
+                            list.insertBefore(currentDraggable, afterElement);
+                        }
+                    }
+                });
+                
+                list.addEventListener('drop', async e => {
+                    e.preventDefault();
+                    if(!draggedItem) return;
+                    const stageIndex = parseInt(list.dataset.stageIndex);
+                    const stageActivities = curriculumData.stages[stageIndex].activities;
+                    
+                    const newOrder = Array.from(list.querySelectorAll('.draggable')).map(el => {
+                         return stageActivities[parseInt(el.dataset.activityIndex)];
+                    });
+
+                    curriculumData.stages[stageIndex].activities = newOrder;
+                    
+                    await updateCurriculumInDb();
+                    renderCmsEditor();
+                });
+            });
+        }
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.draggable:not(.dragging), .stage-draggable:not(.dragging-stage)')];
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        
+        async function updateCurriculumInDb() {
+            const curriculumRef = doc(db, "curriculum", currentCmsGrade);
+            await setDoc(curriculumRef, curriculumData);
+        }
+        
+        function openStageModal(index) {
+            playSound('clickSound');
+            editingStageIndex = index;
+            document.getElementById('stage-modal-title').textContent = getTranslation(index !== null ? 'editStageTitle' : 'addNewStageTitle');
+            document.getElementById('stage-name-input').value = (index !== null) ? curriculumData.stages[index].name : '';
+            document.getElementById('stage-modal').classList.remove('hidden');
+        }
+        
+        async function handleSaveStage() {
+            playSound('clickSound');
+            const newName = document.getElementById('stage-name-input').value.trim();
+            if (!newName) return;
+            if (editingStageIndex !== null) {
+                curriculumData.stages[editingStageIndex].name = newName;
+            } else {
+                curriculumData.stages.push({ id: `stage_${Date.now()}`, name: newName, activities: [], vocabulary: [] });
+            }
+            await updateCurriculumInDb();
+            document.getElementById('stage-modal').classList.add('hidden');
+            renderCmsEditor();
+        }
+        
+        function deleteStage(index) {
+            showConfirm(`Are you sure you want to delete stage: "${curriculumData.stages[index].name}"?`, async () => {
+                curriculumData.stages.splice(index, 1);
+                await updateCurriculumInDb();
+                renderCmsEditor();
+            });
+        }
+        
+        // Activity CMS
+        function openActivityModal(stageIndex) {
+            playSound('clickSound');
+            editingActivityIndex = null;
+            currentStageIndexForActivity = stageIndex;
+            document.getElementById('activity-modal-title').textContent = getTranslation('addNewActivityTitle');
+            document.getElementById('activity-type-select').value = '';
+            document.getElementById('activity-form-container').innerHTML = '';
+            document.getElementById('activity-modal').classList.remove('hidden');
+        }
+        
+        function openActivityModalForEdit(stageIndex, activityIndex) {
+            playSound('clickSound');
+            editingStageIndex = stageIndex;
+            editingActivityIndex = activityIndex;
+
+            const activity = curriculumData.stages[stageIndex].activities[activityIndex];
+            if (!activity) return;
+
+            document.getElementById('activity-modal-title').textContent = getTranslation('editActivityTitle');
+            const typeSelect = document.getElementById('activity-type-select');
+            typeSelect.value = activity.type;
+            
+            typeSelect.dispatchEvent(new Event('change'));
+            
+            const form = document.getElementById('activity-form-container');
+            form.querySelector('#activity-time-limit').value = activity.data.timeLimit || 0;
+            form.querySelector('#activity-question-text').value = activity.data.question || '';
+            form.querySelector('#activity-question-audio').value = activity.data.questionAudioUrl || '';
+            form.querySelector('#activity-question-tts').checked = activity.data.useTTS || false;
+
+            switch(activity.type) {
+                case 'color_word':
+                    form.querySelector('#cw-word').value = activity.data.word || '';
+                    break;
+                case 'multiple_choice':
+                    form.querySelector('#mc-image-url').value = activity.data.imageUrl || '';
+                    const optionsContainer = form.querySelector('#mc-options-container');
+                    optionsContainer.innerHTML = '';
+                    let correctOptionIndex = -1;
+                    activity.data.options.forEach((opt, index) => {
+                        if (opt.value === activity.data.correctAnswer.value && opt.type === activity.data.correctAnswer.type) {
+                           correctOptionIndex = index;
+                        }
+                        addMcOption(opt, index, correctOptionIndex === index);
+                    });
+                    break;
+                case 'pronunciation':
+                    form.querySelector('#pronounce-word').value = activity.data.word || '';
+                    form.querySelector('#pronounce-image-url').value = activity.data.imageUrl || '';
+                    form.querySelector('#pronounce-audio-url').value = activity.data.audioUrl || '';
+                    break;
+                case 'complete_sentence':
+                    form.querySelector('#cs-part1').value = activity.data.part1 || '';
+                    form.querySelector('#cs-correct').value = activity.data.correctWord || '';
+                    form.querySelector('#cs-part2').value = activity.data.part2 || '';
+                    form.querySelector('#cs-distractors').value = (activity.data.distractors || []).join(', ');
+                    break;
+                case 'matching':
+                    const pairsContainer = form.querySelector('#matching-pairs-container');
+                    pairsContainer.innerHTML = '';
+                    activity.data.pairs.forEach(pair => addMatchingPair(pair));
+                    break;
+                case 'arrange_words':
+                    form.querySelector('#arrange-text').value = activity.data.text || '';
+                    break;
+                case 'trace_word':
+                    form.querySelector('#trace-text').value = activity.data.text || '';
+                    break;
+            }
+
+            document.getElementById('activity-modal').classList.remove('hidden');
+        }
+
+        async function renderActivity(activity) {
+            currentActivity = activity;
+            const container = document.getElementById('activity-container');
+            container.innerHTML = '<div class="loader"></div>';
+            
+            isTimeFrozen = false;
+            if (activityTimer) clearInterval(activityTimer);
+
+            setTimeout(() => {
+                container.style.opacity = 0;
+                
+                const data = activity.data;
+                
+                const timerDisplay = document.getElementById('timer-display');
+                if (data.timeLimit > 0) {
+                    timeLeft = data.timeLimit;
+                    document.getElementById('timer-countdown').textContent = timeLeft;
+                    timerDisplay.classList.remove('hidden', 'low-time');
+                    startTimer();
+                } else { 
+                    timerDisplay.classList.add('hidden'); 
+                }
+                
+                renderInventory();
+                let html = '';
+                let questionText = data.question || '';
+                let questionAudioHtml = '';
+
+                if (data.questionAudioUrl || data.useTTS) {
+                    questionAudioHtml = `<button class="question-audio-btn"><i class="fas fa-volume-up"></i></button>`;
+                }
+
+                const playQuestionSound = () => {
+                    if(data.questionAudioUrl) {
+                        const audio = new Audio(data.questionAudioUrl);
+                        audio.volume = gameSounds.correctSound ? gameSounds.correctSound.volume : 1;
+                        audio.play();
+                    } else if(data.useTTS && questionText) {
+                        window.speechSynthesis.cancel();
+                        const utterance = new SpeechSynthesisUtterance(questionText);
+                        utterance.lang = (currentLanguage === 'ar') ? 'ar-SA' : 'en-US';
+                        window.speechSynthesis.speak(utterance);
+                    }
+                };
+                
+                switch(activity.type) {
+                    case 'color_word':
+                        questionText = data.question || `Color the word: ${data.word}`;
+                        html = `
+                            <h2 class="activity-title">${questionText} ${questionAudioHtml}</h2>
+                            <div class="canvas-container">
+                                <canvas id="drawing-canvas"></canvas>
+                            </div>
+                            <div id="color-palette" class="color-palette">
+                                ${['#f44336', '#9c27b0', '#2196f3', '#4caf50', '#ffeb3b', '#ff9800', '#795548', '#34495e'].map(c => `<div class="color-tool" data-color="${c}" style="background-color: ${c};"></div>`).join('')}
+                            </div>
+                            <button id="activity-done-btn" class="btn btn-primary mt-4">Done</button>`;
+                        container.innerHTML = html;
+                        
+                        const drawingCanvas = container.querySelector('#drawing-canvas');
+                        if (!drawingCanvas) { console.error("Color Word canvas not found!"); return; }
+
+                        const drawCtx = drawingCanvas.getContext('2d');
+                        const parent = container.querySelector('.canvas-container');
+                        const parentWidth = parent.clientWidth;
+                        const parentHeight = parent.clientHeight;
+                        drawingCanvas.width = parentWidth;
+                        drawingCanvas.height = parentHeight;
+                        
+                        const fontSize = Math.min(parentHeight * 0.7, parentWidth / (data.word.length * 0.6));
+                        
+                        drawCtx.clearRect(0, 0, parentWidth, parentHeight);
+                        drawCtx.globalCompositeOperation = 'source-over'; 
+                        drawCtx.font = `bold ${fontSize}px 'Fredoka', sans-serif`;
+                        drawCtx.textAlign = 'center';
+                        drawCtx.textBaseline = 'middle';
+                        drawCtx.fillStyle = '#e0e0e0'; 
+                        drawCtx.fillText(data.word, parentWidth / 2, parentHeight / 2);
+                        
+                        let selectedColor = '#f44336';
+                        let isDrawing = false;
+                        
+                        container.querySelectorAll('.color-tool').forEach(tool => {
+                            tool.onclick = () => {
+                                playSound('clickSound');
+                                container.querySelector('.selected')?.classList.remove('selected');
+                                tool.classList.add('selected');
+                                selectedColor = tool.dataset.color;
+                            }
+                        });
+                        container.querySelector('.color-tool').classList.add('selected');
+
+                        function getEventPosition(canvas, event) {
+                            const rect = canvas.getBoundingClientRect();
+                            const scaleX = canvas.width / rect.width;
+                            const scaleY = canvas.height / rect.height;
+                            const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+                            const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+                            return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+                        }
+                        
+                        function startDrawing(e) {
+                            e.preventDefault();
+                            isDrawing = true;
+                            drawCtx.globalCompositeOperation = 'source-atop';
+                            drawCtx.strokeStyle = selectedColor;
+                            drawCtx.lineWidth = 25;
+                            drawCtx.lineCap = 'round';
+                            drawCtx.lineJoin = 'round';
+                            const pos = getEventPosition(drawingCanvas, e);
+                            drawCtx.beginPath();
+                            drawCtx.moveTo(pos.x, pos.y);
+                        }
+
+                        function draw(e) {
+                            if (!isDrawing) return;
+                            e.preventDefault();
+                            const pos = getEventPosition(drawingCanvas, e);
+                            drawCtx.lineTo(pos.x, pos.y);
+                            drawCtx.stroke();
+                        }
+
+                        function stopDrawing() { isDrawing = false; }
+                        
+                        drawingCanvas.addEventListener('mousedown', startDrawing);
+                        drawingCanvas.addEventListener('mousemove', draw);
+                        drawingCanvas.addEventListener('mouseup', stopDrawing);
+                        drawingCanvas.addEventListener('mouseout', stopDrawing);
+                        drawingCanvas.addEventListener('touchstart', startDrawing, { passive: false });
+                        drawingCanvas.addEventListener('touchmove', draw, { passive: false });
+                        drawingCanvas.addEventListener('touchend', stopDrawing);
+
+                        container.querySelector('#activity-done-btn').addEventListener('click', () => advanceToNextActivity());
+                        break;
+                        
+                    case 'multiple_choice':
+                        questionText = data.question || 'Choose the correct answer:';
+                        html = `
+                            <h2 class="activity-title">${questionText} ${questionAudioHtml}</h2>
+                            ${data.imageUrl ? `<img src="${data.imageUrl}" alt="Question" class="mx-auto mb-6 rounded-xl max-h-60 shadow-md">` : ''}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                ${data.options.map((option, index) => {
+                                    if (option.type === 'image') {
+                                        return `<button class="option-btn btn btn-primary p-2 h-40" data-index="${index}">
+                                                    <img src="${option.value}" class="w-full h-full object-contain">
+                                                </button>`;
+                                    } else {
+                                        return `<button class="option-btn btn btn-primary text-xl p-4" data-index="${index}">${option.value}</button>`;
+                                    }
+                                }).join('')}
+                            </div>`;
+                        container.innerHTML = html;
+                        container.querySelectorAll('.option-btn').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                const index = parseInt(this.dataset.index);
+                                if (data.options[index].value === data.correctAnswer.value) {
+                                    createParticleEffect(this.getBoundingClientRect().left + this.offsetWidth/2, this.getBoundingClientRect().top + this.offsetHeight/2, '#4caf50');
+                                    handleCorrectAnswer();
+                                } else {
+                                    handleWrongAnswer(this);
+                                }
+                            });
+                        });
+                        break;
+                        
+                    case 'pronunciation':
+                        questionText = data.question || `Pronounce the word:`;
+                        html = `
+                            <h2 class="activity-title">${questionText} ${questionAudioHtml}</h2>
+                            <p class="text-5xl font-bold mb-4 text-purple-700">${data.word}</p>
+                            ${data.imageUrl ? `<img src="${data.imageUrl}" alt="${data.word}" class="mx-auto mb-6 rounded-xl max-h-60 shadow-md">` : ''}
+                            <button id="listen-btn" class="btn btn-secondary mb-4"><i class="fas fa-volume-up mr-2"></i> Listen</button>
+                            <div id="pronunciation-controls"></div>
+                            <p id="pronunciation-status" class="mt-4 text-lg font-semibold text-gray-600"></p>`;
+                        container.innerHTML = html;
+
+                        container.querySelector('#listen-btn').addEventListener('click', () => {
+                            if (data.audioUrl) new Audio(data.audioUrl).play();
+                        });
+                        
+                        const controlsContainer = container.querySelector('#pronunciation-controls');
+                        const statusEl = container.querySelector('#pronunciation-status');
+                        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+                        if (!SpeechRecognition) {
+                            controlsContainer.innerHTML = `
+                            <div class="p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded-lg">
+                                <h3 class="font-bold">${getTranslation('pronunciationUnsupported')}</h3>
+                            </div>
+                            <button id="pronounce-skip-btn" class="btn btn-primary mt-4">${getTranslation('pronunciationUnsupportedCTA')}</button>`;
+                            controlsContainer.querySelector('#pronounce-skip-btn').addEventListener('click', handleCorrectAnswer);
+                        } else {
+                            controlsContainer.innerHTML = `<button id="record-btn" class="btn btn-danger text-2xl w-20 h-20 rounded-full"><i class="fas fa-microphone"></i></button>`;
+                            statusEl.textContent = getTranslation('pronunciationStatus');
+                            const recordBtn = container.querySelector('#record-btn');
+                            
+                            recordBtn.addEventListener('click', () => {
+                                // Create a new instance every time to avoid state issues
+                                const recognition = new SpeechRecognition();
+                                recognition.lang = 'en-US';
+                                recognition.interimResults = false;
+
+                                recognition.onresult = (event) => {
+                                    const transcript = event.results[0][0].transcript.toLowerCase().trim().replace(/[^a-z0-9\s]/gi, '');
+                                    const correctWord = data.word.toLowerCase().trim().replace(/[^a-z0-9\s]/gi, '');
+                                    if (transcript === correctWord) {
+                                        statusEl.textContent = getTranslation('pronunciationSuccess');
+                                        statusEl.style.color = 'var(--success-color)';
+                                        createParticleEffect(recordBtn.getBoundingClientRect().left + recordBtn.offsetWidth/2, recordBtn.getBoundingClientRect().top + recordBtn.offsetHeight/2, 'var(--success-color)');
+                                        setTimeout(handleCorrectAnswer, 1500);
+                                    } else {
+                                        statusEl.textContent = `${getTranslation('pronunciationFail')} You said: "${transcript}"`;
+                                        statusEl.style.color = 'var(--danger-color)';
+                                        handleWrongAnswer(recordBtn);
+                                    }
+                                };
+    
+                                recognition.onend = () => {
+                                    recordBtn.disabled = false;
+                                    recordBtn.classList.remove('animate-pulse');
+                                };
+    
+                                recognition.onerror = (event) => {
+                                    console.error("Speech recognition error:", event.error);
+                                    statusEl.textContent = "Error or no speech detected. Please try again.";
+                                    handleWrongAnswer(recordBtn);
+                                };
+
+                                recognition.start();
+                                recordBtn.disabled = true;
+                                recordBtn.classList.add('animate-pulse');
+                                statusEl.textContent = getTranslation('pronunciationListening');
+                            });
+                        }
+                        break;
+                        
+                    case 'matching':
+                        questionText = data.question || "Match the items:";
+                        html = `
+                            <h2 class="activity-title">${questionText} ${questionAudioHtml}</h2>
+                            <div class="match-container-wrapper">
+                                <svg class="connector-svg"></svg>
+                                <div class="match-container">
+                                    <div class="match-column" id="match-prompts"></div>
+                                    <div class="match-column" id="match-answers"></div>
+                                </div>
+                            </div>`;
+                        container.innerHTML = html;
+
+                        const promptsContainer = container.querySelector('#match-prompts');
+                        const answersContainer = container.querySelector('#match-answers');
+                        const svgContainer = container.querySelector('.connector-svg');
+                        const pairs = [...data.pairs].map((p, i) => ({ ...p, id: i }));
+
+                        const renderMatchItem = item => item.type === 'image' 
+                            ? `<div class="match-item-content"><img src="${item.value}" alt="match item"></div>` 
+                            : `<div class="match-item-content"><span>${item.value}</span></div>`;
+                        
+                        pairs.forEach(p => promptsContainer.innerHTML += `<div class="match-item" data-id="${p.id}">${renderMatchItem(p.prompt)}<div class="connector-dot"></div></div>`);
+                        [...pairs].sort(() => Math.random() - 0.5).forEach(p => answersContainer.innerHTML += `<div class="match-item" data-id="${p.id}"><div class="connector-dot"></div>${renderMatchItem(p.answer)}</div>`);
+                        
+                        let selectedPromptEl = null;
+                        let matchedCount = 0;
+
+                        const allDots = container.querySelectorAll('.connector-dot');
+                        allDots.forEach(dot => dot.addEventListener('click', (e) => handleMatchClick(e.currentTarget)));
+
+                        function handleMatchClick(dot) {
+                            const item = dot.closest('.match-item');
+                            if (item.classList.contains('matched')) return;
+                            playSound('clickSound');
+
+                            const isPrompt = item.parentElement.id === 'match-prompts';
+
+                            if (isPrompt) {
+                                if (selectedPromptEl) selectedPromptEl.classList.remove('selected');
+                                selectedPromptEl = item;
+                                selectedPromptEl.classList.add('selected');
+                            } else if (selectedPromptEl) {
+                                if (selectedPromptEl.dataset.id === item.dataset.id) {
+                                    drawConnection(selectedPromptEl.querySelector('.connector-dot'), dot, true);
+                                    selectedPromptEl.classList.add('matched');
+                                    item.classList.add('matched');
+                                    selectedPromptEl.classList.remove('selected');
+                                    selectedPromptEl = null;
+                                    matchedCount++;
+                                    if (matchedCount === pairs.length) {
+                                        setTimeout(handleCorrectAnswer, 1000);
+                                    }
+                                } else {
+                                    drawConnection(selectedPromptEl.querySelector('.connector-dot'), dot, false);
+                                    handleWrongAnswer();
+                                    selectedPromptEl.classList.remove('selected');
+                                    selectedPromptEl = null;
+                                }
+                            }
+                        }
+
+                        function drawConnection(dot1, dot2, isCorrect) {
+                            const containerRect = svgContainer.getBoundingClientRect();
+                            const rect1 = dot1.getBoundingClientRect();
+                            const rect2 = dot2.getBoundingClientRect();
+                            
+                            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                            line.setAttribute('x1', rect1.left + rect1.width / 2 - containerRect.left);
+                            line.setAttribute('y1', rect1.top + rect1.height / 2 - containerRect.top);
+                            line.setAttribute('x2', rect2.left + rect2.width / 2 - containerRect.left);
+                            line.setAttribute('y2', rect2.top + rect2.height / 2 - containerRect.top);
+                            line.classList.add(isCorrect ? 'correct-line' : 'incorrect-line');
+                            
+                            svgContainer.appendChild(line);
+                            if (!isCorrect) setTimeout(() => line.remove(), 500);
+                        }
+                        break;
+                    
+                    case 'complete_sentence':
+                        const allOptions = [data.correctWord, ...data.distractors].sort(() => Math.random() - 0.5);
+                        questionText = data.question || "Complete the sentence";
+                        html = `
+                            <h2 class="activity-title">${questionText} ${questionAudioHtml}</h2>
+                            <div class="text-2xl md:text-3xl font-semibold my-8 p-6 bg-white rounded-2xl shadow-inner">
+                                <span>${data.part1}</span>
+                                <span class="inline-block w-32 border-b-2 border-dashed border-gray-400 mx-2"></span>
+                                <span>${data.part2}</span>
+                            </div>
+                            <div class="flex flex-wrap justify-center gap-4">
+                                ${allOptions.map(opt => `<button class="option-btn btn btn-secondary text-xl p-4">${opt}</button>`).join('')}
+                            </div>
+                        `;
+                        container.innerHTML = html;
+                        container.querySelectorAll('.option-btn').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                if (this.textContent === data.correctWord) {
+                                    handleCorrectAnswer();
+                                } else {
+                                    handleWrongAnswer(this);
+                                }
+                            });
+                        });
+                        break;
+                    
+                    case 'arrange_words':
+                        const words = data.text.split(' ').sort(() => Math.random() - 0.5);
+                        questionText = data.question || 'Arrange the words to form a sentence';
+                        html = `
+                            <h2 class="activity-title">${questionText} ${questionAudioHtml}</h2>
+                            <div id="drop-zone" class="drop-zone p-4 my-6 rounded-2xl flex flex-wrap gap-2 items-center justify-center"></div>
+                            <div id="word-bank" class="p-4 flex flex-wrap gap-3 justify-center">
+                                ${words.map(w => `<div class="draggable-word tappable p-3 px-5 bg-yellow-300 rounded-full font-bold shadow-md" draggable="true">${w}</div>`).join('')}
+                            </div>
+                            <div class="flex gap-4 justify-center">
+                                <button id="check-sentence-btn" class="btn btn-primary mt-6">Check</button>
+                                <button id="reset-words-btn" class="btn btn-secondary mt-6">Reset</button>
+                            </div>
+                        `;
+                        container.innerHTML = html;
+                        const dropZone = container.querySelector('#drop-zone');
+                        const wordBank = container.querySelector('#word-bank');
+                        
+                        function handleWordTap(e) {
+                            if (e.target.classList.contains('draggable-word')) {
+                                playSound('clickSound');
+                                const wordEl = e.target;
+                                if (wordEl.parentElement.id === 'word-bank') {
+                                    dropZone.appendChild(wordEl);
+                                } else {
+                                    wordBank.appendChild(wordEl);
+                                }
+                            }
+                        }
+                        wordBank.addEventListener('click', handleWordTap);
+                        dropZone.addEventListener('click', handleWordTap);
+
+                        function resetWords() {
+                            playSound('clickSound');
+                            const wordsInDropZone = dropZone.querySelectorAll('.draggable-word');
+                            wordsInDropZone.forEach(word => wordBank.appendChild(word));
+                        }
+                        
+                        container.querySelector('#reset-words-btn').addEventListener('click', resetWords);
+                        
+                        container.querySelectorAll('.draggable-word').forEach(word => {
+                            word.addEventListener('dragstart', e => {
+                                e.dataTransfer.setData('text/plain', e.target.textContent);
+                                setTimeout(() => e.target.classList.add('dragging'), 0);
+                            });
+                            word.addEventListener('dragend', e => e.target.classList.remove('dragging'));
+                        });
+
+                        const dragOverHandler = e => {
+                            e.preventDefault();
+                            e.target.closest('.drop-zone, #word-bank').classList.add('bg-green-100');
+                        };
+                        const dragLeaveHandler = e => e.target.closest('.drop-zone, #word-bank').classList.remove('bg-green-100');
+                        const dropHandler = e => {
+                            e.preventDefault();
+                            const targetZone = e.target.closest('.drop-zone, #word-bank');
+                            if(!targetZone) return;
+                            targetZone.classList.remove('bg-green-100');
+                            const draggedWordText = e.dataTransfer.getData('text/plain');
+                            const draggedEl = Array.from(document.querySelectorAll('.draggable-word')).find(el => el.textContent === draggedWordText);
+                            if (draggedEl) targetZone.appendChild(draggedEl);
+                        };
+
+                        [dropZone, wordBank].forEach(zone => {
+                            zone.addEventListener('dragover', dragOverHandler);
+                            zone.addEventListener('dragleave', dragLeaveHandler);
+                            zone.addEventListener('drop', dropHandler);
+                        });
+
+                        container.querySelector('#check-sentence-btn').onclick = () => {
+                            const arrangedSentence = Array.from(dropZone.children).map(el => el.textContent.trim()).join(' ').toLowerCase();
+                            const correctSentence = data.text.trim().toLowerCase();
+                            if (arrangedSentence === correctSentence) {
+                                handleCorrectAnswer();
+                            } else {
+                                handleWrongAnswer(dropZone);
+                                setTimeout(resetWords, 600);
+                            }
+                        };
+                        break;
+                    
+                    case 'trace_word':
+                        questionText = data.question || `Trace the word: ${data.text}`;
+                        html = `
+                            <h2 class="activity-title">${questionText} ${questionAudioHtml}</h2>
+                            <div class="trace-container">
+                                <svg viewBox="0 0 500 250">
+                                    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" class="trace-text-outline">${data.text}</text>
+                                    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" class="trace-text-guide">${data.text}</text>
+                                </svg>
+                                <canvas id="trace-canvas-draw"></canvas>
+                            </div>
+                            <div class="flex justify-center items-center gap-4 mt-4">
+                                <button id="clear-trace-btn" class="btn btn-secondary"><i class="fas fa-undo mr-2"></i>Clear</button>
+                                <button id="activity-done-btn" class="btn btn-primary">Done</button>
+                            </div>
+                        `;
+                        container.innerHTML = html;
+                        const drawCanvasTrace = container.querySelector('#trace-canvas-draw');
+                        const drawCtxTrace = drawCanvasTrace.getContext('2d');
+                        
+                        const parentElTrace = container.querySelector('.trace-container');
+                        drawCanvasTrace.width = parentElTrace.clientWidth;
+                        drawCanvasTrace.height = parentElTrace.clientHeight;
+
+                        let isTracing = false;
+                        drawCtxTrace.strokeStyle = 'var(--primary-color)';
+                        drawCtxTrace.lineWidth = 20;
+                        drawCtxTrace.lineCap = 'round';
+                        drawCtxTrace.lineJoin = 'round';
+
+                        const getTracePos = (e) => {
+                            const rect = drawCanvasTrace.getBoundingClientRect();
+                            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                            return { x: clientX - rect.left, y: clientY - rect.top };
+                        };
+
+                        const startTrace = (e) => { e.preventDefault(); isTracing = true; const pos = getTracePos(e); drawCtxTrace.beginPath(); drawCtxTrace.moveTo(pos.x, pos.y); };
+                        const doTrace = (e) => { if (!isTracing) return; e.preventDefault(); const pos = getTracePos(e); drawCtxTrace.lineTo(pos.x, pos.y); drawCtxTrace.stroke(); };
+                        const stopTrace = () => isTracing = false;
+
+                        drawCanvasTrace.addEventListener('mousedown', startTrace);
+                        drawCanvasTrace.addEventListener('mousemove', doTrace);
+                        drawCanvasTrace.addEventListener('mouseup', stopTrace);
+                        drawCanvasTrace.addEventListener('mouseout', stopTrace);
+                        drawCanvasTrace.addEventListener('touchstart', startTrace, { passive: false });
+                        drawCanvasTrace.addEventListener('touchmove', doTrace, { passive: false });
+                        drawCanvasTrace.addEventListener('touchend', stopTrace);
+
+                        container.querySelector('#clear-trace-btn').onclick = () => drawCtxTrace.clearRect(0, 0, drawCanvasTrace.width, drawCanvasTrace.height);
+                        container.querySelector('#activity-done-btn').onclick = () => advanceToNextActivity();
+                        break;
+                }
+
+                if (data.questionAudioUrl || data.useTTS) {
+                    const audioBtn = container.querySelector('.question-audio-btn');
+                    if(audioBtn) audioBtn.addEventListener('click', playQuestionSound);
+                    setTimeout(playQuestionSound, 500);
+                }
+                renderInventory();
+                container.style.opacity = 1;
+                container.classList.add('animate-in');
+
+            }, 100);
+        }
+        
+        async function handleSaveActivity() {
+            playSound('clickSound');
+            const type = document.getElementById('activity-type-select').value;
+            if (!type) return;
+            const saveBtn = document.getElementById('save-activity-btn');
+            if(!saveBtn.dataset.originalText) saveBtn.dataset.originalText = saveBtn.querySelector('.btn-text').textContent;
+            setLoadingState(saveBtn, true);
+            
+            try {
+                let data = { 
+                    timeLimit: parseInt(document.getElementById('activity-time-limit').value) || 0,
+                    question: document.getElementById('activity-question-text')?.value.trim() || '',
+                    questionAudioUrl: document.getElementById('activity-question-audio')?.value.trim() || '',
+                    useTTS: document.getElementById('activity-question-tts')?.checked || false
+                };
+                
+                switch(type) {
+                    case 'color_word':
+                        data.word = document.getElementById('cw-word').value.trim();
+                        if (!data.word) throw new Error("Please provide a word to color.");
+                        break;
+                    
+                    case 'multiple_choice':
+                        data.imageUrl = document.getElementById('mc-image-url').value.trim();
+                        data.options = [];
+                        const optionContainers = document.querySelectorAll('#mc-options-container > div');
+                        optionContainers.forEach(container => {
+                            const text = container.querySelector('.mc-option-text').value.trim();
+                            const image = container.querySelector('.mc-option-image').value.trim();
+                            if (image) {
+                                data.options.push({ type: 'image', value: image });
+                            } else if (text) {
+                                data.options.push({ type: 'text', value: text });
+                            }
+                        });
+                        const correctIndex = parseInt(document.querySelector('input[name="mc-correct"]:checked').value);
+                        data.correctAnswer = data.options[correctIndex];
+                        if (!data.correctAnswer || data.options.length < 2) throw new Error("Please provide at least two options and select a correct answer.");
+                        break;
+                    case 'pronunciation':
+                        data.word = document.getElementById('pronounce-word').value.trim();
+                        data.imageUrl = document.getElementById('pronounce-image-url').value.trim();
+                        data.audioUrl = document.getElementById('pronounce-audio-url').value.trim();
+                        if (!data.word) throw new Error("Word is required.");
+                        break;
+                    case 'complete_sentence':
+                        data.part1 = document.getElementById('cs-part1').value.trim();
+                        data.correctWord = document.getElementById('cs-correct').value.trim();
+                        data.part2 = document.getElementById('cs-part2').value.trim();
+                        data.distractors = document.getElementById('cs-distractors').value.split(',').map(s => s.trim()).filter(Boolean);
+                        if (!data.correctWord || data.distractors.length < 1) throw new Error("Please provide the correct word and at least one distractor.");
+                        break;
+                    case 'matching':
+                        data.pairs = [];
+                        document.querySelectorAll('.matching-pair-item').forEach(pairEl => {
+                            const promptType = pairEl.querySelector('.match-prompt-type').value;
+                            const promptValue = pairEl.querySelector('.match-prompt-value').value.trim();
+                            const answerType = pairEl.querySelector('.match-answer-type').value;
+                            const answerValue = pairEl.querySelector('.match-answer-value').value.trim();
+                            if (promptValue && answerValue) {
+                                data.pairs.push({
+                                    prompt: { type: promptType, value: promptValue },
+                                    answer: { type: answerType, value: answerValue }
+                                });
+                            }
+                        });
+                        if (data.pairs.length < 1) throw new Error("Please provide at least one complete pair.");
+                        break;
+                    case 'arrange_words':
+                        data.text = document.getElementById('arrange-text').value.trim();
+                        if (!data.text) throw new Error("Please provide text.");
+                        break;
+                    case 'trace_word':
+                        data.text = document.getElementById('trace-text').value.trim();
+                        if (!data.text) throw new Error("Please provide text.");
+                        break;
+                }
+                
+                if (editingActivityIndex !== null) {
+                    curriculumData.stages[editingStageIndex].activities[editingActivityIndex] = { type, data };
+                } else {
+                    curriculumData.stages[currentStageIndexForActivity].activities = curriculumData.stages[currentStageIndexForActivity].activities || [];
+                    curriculumData.stages[currentStageIndexForActivity].activities.push({ type, data });
+                }
+
+                await updateCurriculumInDb();
+                document.getElementById('activity-modal').classList.add('hidden');
+                renderCmsEditor();
+            } catch (error) {
+                console.error("Error saving activity:", error);
+                alert(`Error: ${error.message}`);
+            } finally {
+                setLoadingState(saveBtn, false);
+            }
+        }
+        
+        function deleteActivity(stageIndex, activityIndex) {
+            showConfirm(`Are you sure you want to delete this activity?`, async () => {
+                curriculumData.stages[stageIndex].activities.splice(activityIndex, 1);
+                await updateCurriculumInDb();
+                renderCmsEditor();
+            });
+        }
+        
+        // Vocabulary CMS
+        function openVocabModal(stageIndex) {
+            playSound('clickSound');
+            editingStageIndex = stageIndex;
+            renderVocabEditor();
+            document.getElementById('vocab-modal').classList.remove('hidden');
+        }
+        
+        function renderVocabEditor() {
+            const container = document.getElementById('vocab-editor-list');
+            const vocab = curriculumData.stages[editingStageIndex].vocabulary || [];
+            container.innerHTML = vocab.map((word, index) => `
+                <div class="p-3 border rounded-lg bg-white space-y-2" data-index="${index}">
+                    <div class="flex gap-2">
+                        <input type="text" placeholder="${getTranslation('word')}" class="input-field mb-0 vocab-word" value="${word.word || ''}">
+                        <button class="btn btn-danger btn-sm delete-vocab-btn"><i class="fas fa-trash"></i></button>
+                    </div>
+                     <div class="upload-container">
+                        <input type="text" placeholder="Image URL" class="input-field mb-0 vocab-image-url" value="${word.imageUrl || ''}">
+                        <button class="btn btn-primary upload-btn upload-btn-sm" data-type="image" title="${getTranslation('uploadNew')}"><i class="fas fa-upload"></i></button>
+                        <button class="btn btn-secondary library-btn library-btn-sm" data-type="image" title="${getTranslation('browse')}"><i class="fas fa-folder-open"></i></button>
+                    </div>
+                    <div class="upload-container">
+                        <input type="text" placeholder="Audio URL" class="input-field mb-0 vocab-audio-url" value="${word.audioUrl || ''}">
+                        <button class="btn btn-primary upload-btn upload-btn-sm" data-type="audio" title="${getTranslation('uploadNew')}"><i class="fas fa-upload"></i></button>
+                        <button class="btn btn-secondary library-btn library-btn-sm" data-type="audio" title="${getTranslation('browse')}"><i class="fas fa-folder-open"></i></button>
+                    </div>
+                </div>
+            `).join('');
+            
+            container.querySelectorAll('.delete-vocab-btn').forEach(btn => btn.onclick = (e) => e.currentTarget.closest('.p-3').remove());
+            container.querySelectorAll('.upload-btn').forEach(btn => btn.addEventListener('click', handleUploadClick));
+            container.querySelectorAll('.library-btn').forEach(btn => btn.addEventListener('click', handleBrowseLibraryClick));
+        }
+        
+        function addVocabWordToEditor() {
+            const container = document.getElementById('vocab-editor-list');
+            const index = container.children.length;
+            const newWordHtml = `
+                <div class="p-3 border rounded-lg bg-white space-y-2" data-index="${index}">
+                    <div class="flex gap-2">
+                        <input type="text" placeholder="${getTranslation('word')}" class="input-field mb-0 vocab-word" value="">
+                        <button class="btn btn-danger btn-sm delete-vocab-btn"><i class="fas fa-trash"></i></button>
+                    </div>
+                    <div class="upload-container">
+                        <input type="text" placeholder="Image URL" class="input-field mb-0 vocab-image-url">
+                        <button class="btn btn-primary upload-btn upload-btn-sm" data-type="image" title="${getTranslation('uploadNew')}"><i class="fas fa-upload"></i></button>
+                        <button class="btn btn-secondary library-btn library-btn-sm" data-type="image" title="${getTranslation('browse')}"><i class="fas fa-folder-open"></i></button>
+                    </div>
+                    <div class="upload-container">
+                        <input type="text" placeholder="Audio URL" class="input-field mb-0 vocab-audio-url">
+                        <button class="btn btn-primary upload-btn upload-btn-sm" data-type="audio" title="${getTranslation('uploadNew')}"><i class="fas fa-upload"></i></button>
+                        <button class="btn btn-secondary library-btn library-btn-sm" data-type="audio" title="${getTranslation('browse')}"><i class="fas fa-folder-open"></i></button>
+                    </div>
+                </div>`;
+            
+            container.insertAdjacentHTML('beforeend', newWordHtml);
+            
+            const newItem = container.lastElementChild;
+            newItem.querySelector('.delete-vocab-btn').onclick = (e) => e.currentTarget.closest('.p-3').remove();
+            newItem.querySelectorAll('.upload-btn').forEach(btn => btn.addEventListener('click', handleUploadClick));
+            newItem.querySelectorAll('.library-btn').forEach(btn => btn.addEventListener('click', handleBrowseLibraryClick));
+        }
+        
+        async function handleSaveVocabulary() {
+            const saveBtn = document.getElementById('save-vocab-btn');
+            setLoadingState(saveBtn, true);
+            
+            try {
+                const newVocabList = [];
+                const editorItems = document.querySelectorAll('#vocab-editor-list > div');
+                for (const item of editorItems) {
+                    const word = item.querySelector('.vocab-word').value.trim();
+                    const imageUrl = item.querySelector('.vocab-image-url').value.trim();
+                    const audioUrl = item.querySelector('.vocab-audio-url').value.trim();
+                    if (word && imageUrl && audioUrl) {
+                        newVocabList.push({ word, imageUrl, audioUrl });
+                    }
+                }
+                curriculumData.stages[editingStageIndex].vocabulary = newVocabList;
+                await updateCurriculumInDb();
+                document.getElementById('vocab-modal').classList.add('hidden');
+                renderCmsEditor();
+            } catch (error) {
+                console.error("Error saving vocabulary:", error);
+                alert("An error occurred while saving. Please check your internet connection.");
+            } finally {
+                setLoadingState(saveBtn, false);
+            }
+        }
+        
+        async function loadSoundUrlManager() {
+            const container = document.getElementById('sound-url-manager');
+            const soundTypes = {
+                correctSound: { icon: 'fa-check-circle', label: 'correctSound' }, wrongSound: { icon: 'fa-times-circle', label: 'wrongSound' },
+                winSound: { icon: 'fa-trophy', label: 'winSound' }, clickSound: { icon: 'fa-mouse-pointer', label: 'clickSound' },
+                timerUrgentSound: { icon: 'fa-hourglass-half', label: 'timerUrgentSound' }, purchaseSound: { icon: 'fa-shopping-cart', label: 'purchaseSound' },
+                coinSound: { icon: 'fa-coins', label: 'coinSound' }, timesUpSound: { icon: 'fa-stopwatch-20', label: 'timesUpSound' },
+                backgroundMusic: { icon: 'fa-music', label: 'backgroundMusic' }
+            };
+            const soundDoc = await getDoc(doc(db, "settings", "sounds"));
+            const currentSounds = soundDoc.exists() ? soundDoc.data() : {};
+            container.innerHTML = Object.entries(soundTypes).map(([key, value]) => `
+                <div class="p-3 bg-gray-50 rounded-lg">
+                    <div class="font-semibold mb-2"><i class="fas ${value.icon} text-purple-500 mr-2"></i><span>${getTranslation(value.label)}</span></div>
+                    <div class="upload-container">
+                        <input type="text" id="${key}-url" class="input-field mb-0 sound-url-input" placeholder="${getTranslation('soundUrlPlaceholder')}" value="${currentSounds[key]?.url || ''}">
+                        <button type="button" class="btn btn-primary upload-btn upload-btn-sm" data-type="audio" title="${getTranslation('uploadNew')}"><i class="fas fa-upload"></i></button>
+                        <button type="button" class="btn btn-secondary library-btn library-btn-sm" data-type="audio" title="${getTranslation('browse')}"><i class="fas fa-folder-open"></i></button>
+                    </div>
+                    <input type="range" id="${key}-volume" class="w-full mt-2" min="0" max="1" step="0.1" value="${currentSounds[key]?.volume !== undefined ? currentSounds[key].volume : 1}">
+                </div>`).join('');
+            
+            container.querySelectorAll('.upload-btn').forEach(btn => btn.addEventListener('click', handleUploadClick));
+            container.querySelectorAll('.library-btn').forEach(btn => btn.addEventListener('click', handleBrowseLibraryClick));
+
+            updateLanguage();
+        }
+        
+        async function handleSaveSounds() {
+             playSound('clickSound');
+             const soundData = {};
+             document.querySelectorAll('#sound-url-manager .p-3').forEach(div => {
+                 const urlInput = div.querySelector('input[type="text"]');
+                 const volumeInput = div.querySelector('input[type="range"]');
+                 const key = urlInput.id.replace('-url', '');
+                 if (urlInput.value.trim()) {
+                     soundData[key] = {
+                         url: urlInput.value.trim(),
+                         volume: parseFloat(volumeInput.value)
+                     };
+                 }
+             });
+             try {
+                await setDoc(doc(db, "settings", "sounds"), soundData, { merge: true });
+                await loadGameSounds();
+                showToast("Sound URLs saved successfully!");
+             } catch (e) { showToast("Error saving URLs."); }
+        }
+
+        async function loadGameInfo() {
+            if(gameInfoData) {
+                document.getElementById('game-info-en').value = gameInfoData.infoText_en || '';
+                document.getElementById('game-info-ar').value = gameInfoData.infoText_ar || '';
+            }
+        }
+
+        async function handleSaveGameInfo() {
+            playSound('clickSound');
+            const newInfoData = {
+                infoText_en: document.getElementById('game-info-en').value,
+                infoText_ar: document.getElementById('game-info-ar').value
+            };
+            try {
+                await setDoc(doc(db, "settings", "gameInfo"), newInfoData, { merge: true });
+                gameInfoData = newInfoData;
+                showToast("Game info saved successfully!");
+            } catch (error) {
+                console.error("Error saving game info:", error);
+                showToast("Error saving game info.");
+            }
+        }
+        
+        // --- Student/Game Functions ---
+        async function loadStudentStages(grade) {
+            document.getElementById('student-name').textContent = currentUserData.username;
+            updateCoinsDisplay();
+            const stagesContainer = document.getElementById('stages-path-container');
+            stagesContainer.innerHTML = '<div class="loader"></div>';
+            try {
+                const curriculumRef = doc(db, "curriculum", grade);
+                const curriculumSnap = await getDoc(curriculumRef);
+                const userSnap = await getDoc(doc(db, "users", currentUser.uid));
+                currentUserData = {id: currentUser.uid, ...userSnap.data()};
+                updateCoinsDisplay();
+                
+                const completedStages = currentUserData.progress?.[grade]?.completedStages || [];
+                
+                if (curriculumSnap.exists() && curriculumSnap.data().stages?.length > 0) {
+                    const stages = curriculumSnap.data().stages;
+                    let stageHTML = '<div class="stages-path-wrapper">';
+                    let nextStageFound = false;
+                    stages.forEach((stage, index) => {
+                        const isLocked = index > 0 && !completedStages.includes(stages[index - 1].id);
+                        const isCompleted = completedStages.includes(stage.id);
+                        let statusClass = isLocked ? 'locked' : (isCompleted ? 'completed' : 'unlocked');
+                        
+                        if (!isLocked && !isCompleted && !nextStageFound) {
+                            statusClass += ' next-stage';
+                            nextStageFound = true;
+                        }
+
+                        stageHTML += `
+                            <div class="stage-node ${statusClass}" data-stage-id="${isLocked ? '' : stage.id}">
+                                <div class="stage-icon">
+                                    ${isLocked ? '<i class="fas fa-lock"></i>' : (isCompleted ? '<i class="fas fa-check"></i>' : `<span>${index + 1}</span>`)}
+                                </div>
+                                <div class="stage-name">${stage.name}</div>
+                            </div>`;
+                    });
+                    stageHTML += '</div>';
+                    stagesContainer.innerHTML = stageHTML;
+                    
+                    stagesContainer.querySelectorAll('.stage-node:not(.locked)').forEach(card => 
+                        card.addEventListener('click', () => playStage(card.dataset.stageId))
+                    );
+                } else {
+                    stagesContainer.innerHTML = `<p class="text-gray-600 text-xl text-center">${getTranslation('noStages')}</p>`;
+                }
+            } catch (error) {
+                console.error("Error loading student stages:", error);
+                stagesContainer.innerHTML = `<p class="text-red-500 text-center">Failed to load stages.</p>`;
+            }
+        }
+        
+        async function playStage(stageId) {
+            playSound('clickSound');
+            const grade = currentUserData.grade;
+            const curriculumRef = doc(db, "curriculum", grade);
+            const curriculumSnap = await getDoc(curriculumRef);
+            if (curriculumSnap.exists()) {
+                currentStageObject = curriculumSnap.data().stages.find(s => s.id === stageId);
+                if (currentStageObject) {
+                    currentActivityIndex = 0;
+                    if (currentStageObject.vocabulary && currentStageObject.vocabulary.length > 0) {
+                        showVocabularyScreen();
+                    } else {
+                        startActivities();
+                    }
+                }
+            }
+        }
+        
+        function showVocabularyScreen() {
+            showPage('vocabulary-page');
+            document.getElementById('vocab-title').textContent = currentStageObject.name;
+            const grid = document.getElementById('vocab-grid');
+            grid.innerHTML = currentStageObject.vocabulary.map(v => `
+                <div class="vocab-card">
+                    <img src="${v.imageUrl || 'https://via.placeholder.com/200'}" alt="${v.word}">
+                    <h3>${v.word}</h3>
+                    <button class="vocab-play-btn" data-audio="${v.audioUrl}"><i class="fas fa-play"></i></button>
+                </div>
+            `).join('');
+            grid.querySelectorAll('.vocab-play-btn').forEach(btn => {
+                btn.onclick = () => {
+                    const audioSrc = btn.dataset.audio;
+                    if(audioSrc) new Audio(audioSrc).play();
+                };
+            });
+            document.getElementById('start-stage-btn').onclick = startActivities;
+        }
+        
+        function startActivities() {
+            showPage('game-page');
+            if (currentStageObject.activities?.length > 0) {
+                renderActivity(currentStageObject.activities[0]);
+            } else {
+                document.getElementById('activity-container').innerHTML = `<h2 class="activity-title">${getTranslation('noActivities')}</h2>`;
+            }
+        }
+        
+        async function handleCorrectAnswer() {
+            playSound('correctSound');
+            if(activityTimer) clearInterval(activityTimer);
+            isTimeFrozen = false;
+            
+            showEncouragementModal(true);
+            
+            const userRef = doc(db, "users", currentUser.uid);
+            await updateDoc(userRef, { coins: increment(10) });
+            currentUserData.coins = (currentUserData.coins || 0) + 10;
+            
+            setTimeout(() => {
+                updateCoinsDisplay();
+            }, 1000);
+            
+            setTimeout(advanceToNextActivity, 2800);
+        }
+
+        function advanceToNextActivity(skipped = false) {
+             if (!skipped) playSound('correctSound');
+             if(activityTimer) clearInterval(activityTimer);
+             isTimeFrozen = false;
+
+             currentActivityIndex++;
+             if (currentActivityIndex < currentStageObject.activities.length) {
+                 renderActivity(currentStageObject.activities[currentActivityIndex]);
+             } else {
+                 handleStageComplete();
+             }
+        }
+        
+        async function handleStageComplete() {
+            playSound('winSound');
+            triggerWinEffect();
+            createParticleEffect(window.innerWidth / 2, window.innerHeight / 2, 'var(--primary-color)');
+            showToast('stageComplete');
+            
+            const grade = currentUserData.grade;
+            const userRef = doc(db, "users", currentUser.uid);
+            const progressKey = `progress.${grade}.completedStages`;
+            await updateDoc(userRef, { [progressKey]: arrayUnion(currentStageObject.id) });
+            setTimeout(() => {
+                showPage('student-stages-page');
+                loadStudentStages(grade);
+            }, 4000);
+        }
+        
+        function handleWrongAnswer(element = null) {
+            playSound('wrongSound');
+            showEncouragementModal(false);
+            
+            const targetElement = element || document.getElementById('activity-container');
+            targetElement.classList.add('animate-shake');
+            
+            if (element) {
+                 createParticleEffect(element.getBoundingClientRect().left + element.offsetWidth/2, element.getBoundingClientRect().top + element.offsetHeight/2, 'var(--danger-color)');
+            } else {
+                 triggerScreenFlash('red');
+            }
+
+            setTimeout(() => {
+                targetElement.classList.remove('animate-shake');
+            }, 600);
+        }
+
+        function handleTimeUp() {
+            if(activityTimer) clearInterval(activityTimer);
+            isTimeFrozen = false;
+            playSound('timesUpSound');
+            showToast('timesUp', 'error');
+            triggerScreenFlash('red');
+            document.getElementById('activity-container').classList.add('animate-shake');
+            setTimeout(() => {
+                 document.getElementById('activity-container').classList.remove('animate-shake');
+                 renderActivity(currentActivity);
+            }, 1500);
+        }
+        
+        function renderActivityForm(e) {
+            const type = e.target.value;
+            const container = document.getElementById('activity-form-container');
+            let commonHtml = `
+                <hr class="my-4">
+                <input type="number" id="activity-time-limit" placeholder="${getTranslation('timeLimit')}" class="input-field">
+                <input type="text" id="activity-question-text" placeholder="Question Text (optional)" class="input-field">
+                <div class="upload-container">
+                    <input type="text" id="activity-question-audio" placeholder="${getTranslation('questionAudio')}" class="input-field mb-0">
+                    <button type="button" class="btn btn-primary upload-btn" data-type="audio" title="${getTranslation('uploadNew')}"><i class="fas fa-upload"></i></button>
+                    <button type="button" class="btn btn-secondary library-btn" data-type="audio" title="${getTranslation('browse')}"><i class="fas fa-folder-open"></i></button>
+                </div>
+                <div class="flex items-center gap-2 my-4"><input type="checkbox" id="activity-question-tts"><label for="activity-question-tts">${getTranslation('useTTS')}</label></div>
+                <hr class="my-4">
+            `;
+            let formHtml = '';
+            
+            switch(type) {
+                case 'color_word':
+                    formHtml += `<input type="text" id="cw-word" placeholder="Word to color (e.g., Apple)" class="input-field">`;
+                    break;
+                case 'multiple_choice':
+                    formHtml += `<p class="text-sm text-gray-500 my-2">For each option, fill in the Text OR the Image URL.</p>
+                        <div class="upload-container">
+                            <input type="text" id="mc-image-url" placeholder="Optional: Main Question Image URL" class="input-field mb-0">
+                            <button type="button" class="btn btn-primary upload-btn" data-type="image" title="${getTranslation('uploadNew')}"><i class="fas fa-upload"></i></button>
+                            <button type="button" class="btn btn-secondary library-btn" data-type="image" title="${getTranslation('browse')}"><i class="fas fa-folder-open"></i></button>
+                        </div>
+                        <div id="mc-options-container" class="space-y-3 mt-3"></div> 
+                        <button type="button" id="add-mc-option-btn" class="btn btn-secondary w-full mt-2">Add Option</button>`;
+                    break;
+                case 'pronunciation':
+                     formHtml += `<input type="text" id="pronounce-word" placeholder="Word to pronounce" class="input-field">
+                        <div class="upload-container my-2">
+                           <input type="text" id="pronounce-image-url" placeholder="Optional: Image URL" class="input-field mb-0">
+                           <button type="button" class="btn btn-primary upload-btn" data-type="image" title="${getTranslation('uploadNew')}"><i class="fas fa-upload"></i></button>
+                           <button type="button" class="btn btn-secondary library-btn" data-type="image" title="${getTranslation('browse')}"><i class="fas fa-folder-open"></i></button>
+                        </div>
+                        <div class="upload-container">
+                            <input type="text" id="pronounce-audio-url" placeholder="Audio URL for 'listen' button" class="input-field mb-0">
+                            <button type="button" class="btn btn-primary upload-btn" data-type="audio" title="${getTranslation('uploadNew')}"><i class="fas fa-upload"></i></button>
+                            <button type="button" class="btn btn-secondary library-btn" data-type="audio" title="${getTranslation('browse')}"><i class="fas fa-folder-open"></i></button>
+                        </div>`;
+                    break;
+                 case 'complete_sentence':
+                    formHtml += `
+                        <input type="text" id="cs-part1" placeholder="Sentence Part 1 (before blank)" class="input-field">
+                        <input type="text" id="cs-correct" placeholder="Correct (missing) word" class="input-field bg-green-100">
+                        <input type="text" id="cs-part2" placeholder="Sentence Part 2 (after blank)" class="input-field">
+                        <input type="text" id="cs-distractors" placeholder="Wrong words (comma separated)" class="input-field">`;
+                    break;
+                case 'matching':
+                     formHtml += `
+                        <div id="matching-pairs-container" class="space-y-3"></div>
+                        <button type="button" id="add-match-pair-btn" class="btn btn-secondary w-full mt-2">Add Pair</button>`;
+                    break;
+                case 'arrange_words': formHtml += `<input type="text" id="arrange-text" placeholder="Sentence to arrange (e.g., I love my school)" class="input-field">`; break;
+                case 'trace_word': formHtml += `<input type="text" id="trace-text" placeholder="Word to trace" class="input-field">`; break;
+            }
+            container.innerHTML = commonHtml + formHtml;
+            container.querySelectorAll('.upload-btn').forEach(btn => btn.addEventListener('click', handleUploadClick));
+            container.querySelectorAll('.library-btn').forEach(btn => btn.addEventListener('click', handleBrowseLibraryClick));
+            
+            if (type === 'multiple_choice') {
+                addMcOption(null, 0, true);
+                addMcOption(null, 1, false);
+                document.getElementById('add-mc-option-btn').addEventListener('click', () => {
+                    const optionsContainer = document.getElementById('mc-options-container');
+                    addMcOption(null, optionsContainer.children.length, false);
+                });
+            } else if (type === 'matching') {
+                addMatchingPair();
+                addMatchingPair();
+                 document.getElementById('add-match-pair-btn').addEventListener('click', () => addMatchingPair());
+            }
+        }
+
+        function addMcOption(optionData = null, index = 0, isCorrect = false) {
+            const optionsContainer = document.getElementById('mc-options-container');
+            const newOption = document.createElement('div');
+            newOption.className = "p-3 border rounded-lg bg-slate-50";
+            newOption.innerHTML = `
+                <div class="flex items-center justify-between gap-2 mb-2">
+                    <label class="font-bold flex items-center gap-2">
+                        <input type="radio" name="mc-correct" value="${index}" ${isCorrect ? 'checked' : ''}>
+                        Option ${index + 1} ${isCorrect ? '(Correct)' : ''}
+                    </label>
+                    <button class="text-red-500 remove-mc-option-btn"><i class="fas fa-trash"></i></button>
+                </div>
+                <input type="text" placeholder="Option Text" class="input-field mb-2 mc-option-text" value="${(optionData?.type === 'text' ? optionData.value : '') || ''}">
+                <div class="upload-container">
+                    <input type="text" placeholder="Option Image URL" class="input-field mb-0 mc-option-image" value="${(optionData?.type === 'image' ? optionData.value : '') || ''}">
+                    <button type="button" class="btn btn-primary upload-btn upload-btn-sm" data-type="image" title="${getTranslation('uploadNew')}"><i class="fas fa-upload"></i></button>
+                    <button type="button" class="btn btn-secondary library-btn library-btn-sm" data-type="image" title="${getTranslation('browse')}"><i class="fas fa-folder-open"></i></button>
+                </div>`;
+            optionsContainer.appendChild(newOption);
+            newOption.querySelectorAll('.upload-btn').forEach(btn => btn.addEventListener('click', handleUploadClick));
+            newOption.querySelectorAll('.library-btn').forEach(btn => btn.addEventListener('click', handleBrowseLibraryClick));
+            newOption.querySelector('.remove-mc-option-btn').addEventListener('click', () => newOption.remove());
+        }
+        
+        function addMatchingPair(pairData = null) {
+            const container = document.getElementById('matching-pairs-container');
+            const newPair = document.createElement('div');
+            newPair.className = "matching-pair-item p-3 border rounded-lg bg-slate-50";
+            newPair.innerHTML = `
+                <div class="grid grid-cols-2 gap-2">
+                    <p class="font-bold col-span-1">${getTranslation('prompt')}</p>
+                    <p class="font-bold col-span-1">${getTranslation('answer')}</p>
+                </div>
+                <div class="grid grid-cols-2 gap-2 items-start">
+                    <div>
+                        <select class="input-field mb-1 match-prompt-type">
+                            <option value="text" ${pairData?.prompt.type === 'text' ? 'selected' : ''}>${getTranslation('text')}</option>
+                            <option value="image" ${pairData?.prompt.type === 'image' ? 'selected' : ''}>${getTranslation('image')}</option>
+                        </select>
+                        <div class="upload-container">
+                            <input type="text" placeholder="${getTranslation('itemValue')}" class="input-field mb-0 match-prompt-value" value="${pairData?.prompt.value || ''}">
+                            <button type="button" class="btn btn-primary upload-btn upload-btn-sm" data-type="image" title="${getTranslation('uploadNew')}"><i class="fas fa-upload"></i></button>
+                            <button type="button" class="btn btn-secondary library-btn library-btn-sm" data-type="image" title="${getTranslation('browse')}"><i class="fas fa-folder-open"></i></button>
+                        </div>
+                    </div>
+                    <div>
+                        <select class="input-field mb-1 match-answer-type">
+                            <option value="text" ${pairData?.answer.type === 'text' ? 'selected' : ''}>${getTranslation('text')}</option>
+                            <option value="image" ${pairData?.answer.type === 'image' ? 'selected' : ''}>${getTranslation('image')}</option>
+                        </select>
+                         <div class="upload-container">
+                            <input type="text" placeholder="${getTranslation('itemValue')}" class="input-field mb-0 match-answer-value" value="${pairData?.answer.value || ''}">
+                            <button type="button" class="btn btn-primary upload-btn upload-btn-sm" data-type="image" title="${getTranslation('uploadNew')}"><i class="fas fa-upload"></i></button>
+                            <button type="button" class="btn btn-secondary library-btn library-btn-sm" data-type="image" title="${getTranslation('browse')}"><i class="fas fa-folder-open"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <button class="remove-match-pair-btn text-red-500 mt-2 w-full text-center"><i class="fas fa-trash"></i> Remove Pair</button>
+            `;
+            container.appendChild(newPair);
+            newPair.querySelectorAll('.upload-btn').forEach(btn => btn.addEventListener('click', handleUploadClick));
+            newPair.querySelectorAll('.library-btn').forEach(btn => btn.addEventListener('click', handleBrowseLibraryClick));
+            newPair.querySelector('.remove-match-pair-btn').addEventListener('click', () => newPair.remove());
+        }
+        
+        // --- Shop Functions ---
+        const shopItems = {
+            fiftyFiftyHint: { name_en: "50/50 Hint", name_ar: "تلميح 50/50", icon: "fa-star-half-alt", price: 50 },
+            timeBoost: { name_en: "Time Boost (+15s)", name_ar: "زيادة الوقت (+15 ث)", icon: "fa-stopwatch", price: 30 },
+            freezeTime: { name_en: "Freeze Time (10s)", name_ar: "تجميد الوقت (10 ث)", icon: "fa-snowflake", price: 70 },
+            skipQuestion: { name_en: "Skip Question", name_ar: "تخطي السؤال", icon: "fa-forward", price: 100 }
+        };
+
+        async function loadShopItems() {
+            try {
+                const shopDoc = await getDoc(doc(db, "settings", "shopItems"));
+                if (shopDoc.exists()) {
+                    const prices = shopDoc.data();
+                    for (const key in shopItems) {
+                        if (prices[key] !== undefined) {
+                            shopItems[key].price = prices[key];
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Error loading shop prices, using defaults:", error);
+            }
+        }
+        
+        function openShop() {
+            playSound('clickSound');
+            const container = document.getElementById('shop-items-container');
+            container.innerHTML = Object.entries(shopItems).map(([key, item]) => `
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl shadow-sm border">
+                    <div class="text-left">
+                        <div class="font-bold text-lg flex items-center gap-3">
+                            <i class="fas ${item.icon} text-xl text-yellow-500"></i><span>${getTranslation(key)}</span>
+                        </div>
+                        <div class="text-sm text-gray-500">You own: ${currentUserData.inventory?.[key] || 0}</div>
+                    </div>
+                    <button class="buy-item-btn btn btn-primary" data-item="${key}" data-price="${item.price}" ${ (currentUserData.coins || 0) < item.price ? 'disabled' : ''}>
+                        <i class="fas fa-coins mr-2"></i> ${item.price} - <span>${getTranslation('buy')}</span>
+                    </button>
+                </div>`).join('');
+            document.getElementById('shop-modal').classList.remove('hidden');
+            container.querySelectorAll('.buy-item-btn').forEach(btn => btn.addEventListener('click', e => {
+                buyShopItem(e.currentTarget.dataset.item, parseInt(e.currentTarget.dataset.price));
+            }));
+        }
+        
+        async function buyShopItem(itemKey, price) {
+            if ((currentUserData.coins || 0) < price) {
+                playSound('wrongSound');
+                return;
+            }
+            
+            const userRef = doc(db, "users", currentUser.uid);
+            await updateDoc(userRef, { 
+                coins: increment(-price), 
+                [`inventory.${itemKey}`]: increment(1) 
+            });
+            
+            // Update local state immediately for instant UI feedback
+            currentUserData.coins -= price;
+            if (!currentUserData.inventory) currentUserData.inventory = {};
+            currentUserData.inventory[itemKey] = (currentUserData.inventory[itemKey] || 0) + 1;
+            
+            playSound('purchaseSound');
+            triggerPurchaseEffect();
+            document.getElementById('shop-modal').classList.add('hidden');
+            updateCoinsDisplay();
+            renderInventory(); // Re-render inventory on game page immediately
+            showToast('purchaseSuccess');
+        }
+        
+        function renderInventory() {
+            const display = document.getElementById('inventory-display');
+            display.innerHTML = '';
+            for (const [key, count] of Object.entries(currentUserData.inventory || {})) {
+                if (count > 0) {
+                    const item = shopItems[key];
+                    if (item) {
+                        const btn = document.createElement('button');
+                        btn.className = 'inventory-item btn';
+                        btn.dataset.tooltip = getTranslation(key);
+                        btn.innerHTML = `<i class="fas ${item.icon}"></i> <span class="item-count">${count}</span>`;
+                        btn.onclick = () => useItem(key);
+                        display.appendChild(btn);
+                    }
+                }
+            }
+        }
+        
+        async function useItem(itemKey) {
+            if (!currentUserData.inventory[itemKey] || currentUserData.inventory[itemKey] <= 0) return;
+            
+            let itemUsed = false;
+            switch(itemKey) {
+                case 'timeBoost':
+                    if (activityTimer && !isTimeFrozen) {
+                        timeLeft += 15;
+                        document.getElementById('timer-countdown').textContent = timeLeft;
+                        itemUsed = true;
+                    }
+                    break;
+                case 'freezeTime':
+                    if (activityTimer && !isTimeFrozen) {
+                        isTimeFrozen = true;
+                        document.getElementById('timer-display').style.background = 'linear-gradient(45deg, #2196F3, #64B5F6)';
+                        setTimeout(() => {
+                           isTimeFrozen = false;
+                           document.getElementById('timer-display').style.background = ''; // Revert to default
+                        }, 10000);
+                        itemUsed = true;
+                    }
+                    break;
+                case 'fiftyFiftyHint':
+                    if (currentActivity.type === 'multiple_choice') {
+                        const correct = currentActivity.data.correctAnswer;
+                        const wrongOptions = Array.from(document.querySelectorAll('.option-btn'))
+                                                .filter(btn => {
+                                                    const btnIndex = parseInt(btn.dataset.index);
+                                                    return currentActivity.data.options[btnIndex].value !== correct.value && btn.style.display !== 'none';
+                                                });
+                        
+                        if (wrongOptions.length > 1) {
+                           wrongOptions.sort(() => 0.5 - Math.random()); // Shuffle
+                           const numToHide = Math.ceil(wrongOptions.length / 2);
+                           for(let i=0; i < numToHide; i++) {
+                               wrongOptions[i].style.display = 'none';
+                           }
+                           itemUsed = true;
+                        }
+                    }
+                    break;
+                case 'skipQuestion':
+                    advanceToNextActivity(true); // pass true to indicate it's a skip
+                    itemUsed = true;
+                    break;
+            }
+
+            if (itemUsed) {
+                playSound('purchaseSound');
+                showToast('itemUsed');
+                currentUserData.inventory[itemKey]--;
+                await updateDoc(doc(db, "users", currentUser.uid), { [`inventory.${itemKey}`]: increment(-1) });
+                renderInventory();
+            } else {
+                 playSound('wrongSound');
+                 showToast('Cannot use this item now', 'error');
+            }
+        }
+        
+        // --- GitHub Upload and File History Functions ---
+        function getGitHubConfig() {
+            const config = localStorage.getItem('github_config');
+            return config ? JSON.parse(config) : null;
+        }
+
+        function saveGitHubConfig() {
+            const config = {
+                username: document.getElementById('github-username').value.trim(),
+                repo: document.getElementById('github-repo').value.trim(),
+                token: document.getElementById('github-token').value.trim(),
+            };
+            localStorage.setItem('github_config', JSON.stringify(config));
+            showToast('configSaved');
+        }
+
+        function loadGitHubConfig() {
+            const config = getGitHubConfig();
+            if (config) {
+                document.getElementById('github-username').value = config.username || '';
+                document.getElementById('github-repo').value = config.repo || '';
+                document.getElementById('github-token').value = config.token || '';
+            }
+        }
+
+        function isGitHubConfigured() {
+            const config = getGitHubConfig();
+            return config && config.username && config.repo && config.token;
+        }
+
+        function handleUploadClick(e) {
+            const button = e.currentTarget;
+            if (!isGitHubConfigured()) {
+                showToast('githubConfigWarning', 'error');
+                return;
+            }
+            activeUrlInput = button.nextElementSibling.tagName === 'BUTTON' ? button.previousElementSibling : button.parentElement.querySelector('input');
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            const type = button.dataset.type;
+            fileInput.accept = type === 'image' ? 'image/png, image/jpeg, image/gif, image/svg+xml' : 'audio/mpeg, audio/wav, audio/ogg';
+            
+            fileInput.onchange = async (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                if(!button.dataset.originalText) button.dataset.originalText = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = `<svg class="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+                
+                try {
+                    const downloadUrl = await uploadToGitHub(file);
+                    if (activeUrlInput) {
+                        activeUrlInput.value = downloadUrl;
+                    }
+                    await setDoc(doc(collection(db, 'fileHistory')), {
+                        name: file.name,
+                        url: downloadUrl,
+                        type: type,
+                        createdAt: serverTimestamp()
+                    });
+                    showToast('File uploaded successfully!');
+                } catch (error) {
+                    console.error("Upload failed:", error);
+                    showToast(`Upload failed: ${error.message}`, 'error');
+                } finally {
+                    button.disabled = false;
+                    button.innerHTML = button.dataset.originalText;
+                }
+            };
+            fileInput.click();
+        }
+
+        async function uploadToGitHub(file) {
+            const base64content = await fileToBase64(file);
+            const { username, repo, token } = getGitHubConfig();
+            const path = `${file.type.split('/')[0]}s/${Date.now()}-${file.name}`;
+            const url = `https://api.github.com/repos/${username}/${repo}/contents/${path}`;
+
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: `feat: upload ${file.name}`,
+                    content: base64content,
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to upload to GitHub.');
+            }
+
+            const data = await response.json();
+            return data.content.download_url;
+        }
+
+        async function handleBrowseLibraryClick(e) {
+            if (!isGitHubConfigured()) {
+                showToast('githubConfigWarning', 'error');
+                return;
+            }
+            activeUrlInput = e.currentTarget.previousElementSibling.previousElementSibling;
+            const type = e.currentTarget.dataset.type;
+            
+            const modal = document.getElementById('media-library-modal');
+            const grid = document.getElementById('media-library-grid');
+            grid.innerHTML = '<div class="loader"></div>';
+            modal.classList.remove('hidden');
+
+            try {
+                const q = query(collection(db, 'fileHistory'), orderBy('createdAt', 'desc'));
+                const querySnapshot = await getDocs(q);
+                const files = [];
+                querySnapshot.forEach(doc => files.push({ id: doc.id, ...doc.data() }));
+
+                if (files.length === 0) {
+                    grid.innerHTML = `<p class="text-center col-span-full">${getTranslation('noFiles')}</p>`;
+                    return;
+                }
+
+                grid.innerHTML = files.filter(f => f.type === type).map(file => `
+                    <div class="vocab-card" data-url="${file.url}">
+                        ${type === 'image' 
+                            ? `<img src="${file.url}" alt="${file.name}">` 
+                            : `<div class="text-5xl p-10"><i class="fas fa-music"></i></div>`
+                        }
+                        <h3>${file.name}</h3>
+                    </div>
+                `).join('');
+
+                grid.querySelectorAll('.vocab-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        if (activeUrlInput) {
+                            activeUrlInput.value = card.dataset.url;
+                        }
+                        modal.classList.add('hidden');
+                    });
+                });
+
+            } catch (error) {
+                console.error("Error fetching file history:", error);
+                grid.innerHTML = `<p class="text-red-500">${error.message}</p>`;
+            }
+        }
+        
+        async function showLeaderboard() {
+            playSound('clickSound');
+            const modal = document.getElementById('leaderboard-modal');
+            const list = document.getElementById('leaderboard-list');
+            const rankInfo = document.getElementById('current-user-rank-info');
+            
+            list.innerHTML = '<div class="loader"></div>';
+            rankInfo.classList.add('hidden');
+            modal.classList.remove('hidden');
+
+            try {
+                const usersCollection = collection(db, 'users');
+                const querySnapshot = await getDocs(usersCollection);
+                const users = [];
+                querySnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.role === 'student') {
+                        users.push({ id: doc.id, ...data });
+                    }
+                });
+
+                // Sort students by coins descending
+                users.sort((a, b) => (b.coins || 0) - (a.coins || 0));
+
+                if (users.length === 0) {
+                    list.innerHTML = `<p>${getTranslation('noPlayers')}</p>`;
+                    return;
+                }
+                
+                const top10Users = users.slice(0, 10);
+                list.innerHTML = top10Users.map((user, index) => `
+                    <li class="leaderboard-item ${user.id === currentUser.uid ? 'current-user' : ''}" style="animation-delay: ${index * 0.05}s">
+                        <span class="leaderboard-rank">${index + 1}</span>
+                        <span class="leaderboard-name">${user.username}</span>
+                        <span class="leaderboard-score"><i class="fas fa-coins"></i>${user.coins || 0}</span>
+                    </li>
+                `).join('');
+
+                const currentUserRank = users.findIndex(user => user.id === currentUser.uid);
+                if (currentUserRank !== -1) {
+                    rankInfo.textContent = `${getTranslation('yourRank')}: ${currentUserRank + 1}`;
+                    rankInfo.classList.remove('hidden');
+                } else {
+                    rankInfo.textContent = `${getTranslation('yourRank')}: 50+`;
+                    rankInfo.classList.remove('hidden');
+                }
+
+            } catch (error) {
+                console.error("Error loading leaderboard:", error);
+                if (error.code === 'failed-precondition') {
+                    list.innerHTML = `<div class="text-center p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded-lg">
+                        <p class="font-bold">${getTranslation('indexRequiredTitle')}</p>
+                        <p class="text-sm">${getTranslation('indexRequiredBody')}</p>
+                    </div>`;
+                } else {
+                    list.innerHTML = `<p class="text-red-500">${error.message}</p>`;
+                }
+            }
+        }
+        
+        function updateMusicButtonState() {
+             const toggle = document.getElementById('sound-toggle');
+             toggle.classList.toggle('muted', isMusicMuted);
+             toggle.querySelector('i').className = isMusicMuted ? 'fas fa-volume-mute' : 'fas fa-music';
+        }
+
+        async function loadShopPriceManager() {
+            const container = document.getElementById('shop-price-manager');
+            container.innerHTML = Object.entries(shopItems).map(([key, value]) => `
+                <div class="p-3 bg-gray-50 rounded-lg">
+                    <label for="price-${key}" class="font-semibold mb-2 flex items-center gap-2">
+                        <i class="fas ${value.icon} text-purple-500"></i>
+                        <span>${getTranslation(key)}</span>
+                    </label>
+                    <input type="number" id="price-${key}" class="input-field mb-0" value="${value.price}">
+                </div>`).join('');
+            updateLanguage();
+        }
+
+        async function handleSaveShopPrices() {
+            playSound('clickSound');
+            const pricesToSave = {};
+            document.querySelectorAll('#shop-price-manager input').forEach(input => {
+                const key = input.id.replace('price-', '');
+                pricesToSave[key] = parseInt(input.value) || 0;
+            });
+            try {
+                await setDoc(doc(db, "settings", "shopItems"), pricesToSave);
+                await loadShopItems(); // Reload prices into the game
+                showToast("Prices saved successfully!");
+            } catch (error) {
+                console.error("Error saving prices:", error);
+                showToast("Error saving prices.", "error");
+            }
+        }
+
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', function() {
+            var startBtn = document.getElementById('start-game-btn');
+            if (startBtn) {
+                startBtn.onclick = function() {
+                    window.gameHasStarted = true;
+                    var pages = document.querySelectorAll('.page');
+                    for (var i = 0; i < pages.length; i++) {
+                        pages[i].classList.add('hidden');
+                    }
+                    var loginPage = document.getElementById('login-page');
+                    if (loginPage) loginPage.classList.remove('hidden');
+                };
+            }
+        });
+
+        setupEventListeners();
+        updateMusicButtonState();
+        updateLanguage();
+
+        (async () => {
+            try {
+                await loadGameData();
+            } catch(e) {
+                console.warn("Preload game data warning:", e);
+            }
+        })();

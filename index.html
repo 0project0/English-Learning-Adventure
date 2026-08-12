@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en" translate="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="google" content="notranslate">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Learning Adventure</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Cairo:wght@400;600;700&family=Luckiest+Guy&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        window.handleStartGameClick = function() {
+            window.gameHasStarted = true;
+            document.querySelectorAll('.page').forEach(function(p) { p.classList.add('hidden'); });
+            var lp = document.getElementById('login-page');
+            if (lp) lp.classList.remove('hidden');
+        };
+        window.showInfoModal = function() {
+            var m = document.getElementById('info-modal');
+            if (m) m.classList.remove('hidden');
+        };
+        window.closeInfoModal = function() {
+            var m = document.getElementById('info-modal');
+            if (m) m.classList.add('hidden');
+        };
+    </script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <audio id="background-music" loop></audio>
+    <div class="animated-bg"></div>
+    <div class="floating-elements">
+        <div class="floating-element"><i class="fas fa-book"></i></div>
+        <div class="floating-element"><i class="fas fa-pencil-alt"></i></div>
+        <div class="floating-element"><i class="fas fa-graduation-cap"></i></div>
+        <div class="floating-element"><i class="fas fa-star"></i></div>
+        <div class="floating-element"><i class="fas fa-atom"></i></div>
+        <div class="floating-element"><i class="fas fa-lightbulb"></i></div>
+    </div>
+    
+    <div id="toast-container"></div>
+    <div id="effect-container" class="effect-container"></div>
+    <button id="lang-toggle" class="lang-btn"><i class="fas fa-language"></i><span class="lang-text">العربية</span></button>
+    <button id="sound-toggle" class="sound-btn"><i class="fas fa-music"></i></button>
+    
+    <div id="loader" class="page">
+        <div class="text-center">
+            <div class="loader mb-6"></div>
+            <h1 class="text-3xl font-bold" style="color: var(--primary-dark);" data-i18n="loading">Loading Game...</h1>
+        </div>
+    </div>
+
+    <div id="start-page" class="page hidden">
+        <div class="text-center">
+            <div id="start-page-icon"><i class="fas fa-graduation-cap"></i></div>
+            <h1 class="game-title mb-12">Play And Learn</h1>
+            <div class="space-y-6 max-w-sm mx-auto">
+                <button id="start-game-btn" onclick="window.handleStartGameClick()" class="btn btn-primary w-full py-4 text-2xl">
+                    <i class="fas fa-play-circle mr-3"></i> <span data-i18n="startGame">Start Game</span>
+                </button>
+                <button id="info-btn" onclick="window.showInfoModal()" class="btn btn-secondary w-full py-4 text-2xl">
+                    <i class="fas fa-info-circle mr-3"></i> <span data-i18n="gameInfo">Game Info</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="login-page" class="page hidden">
+        <div class="card">
+            <h1 class="text-3xl md:text-4xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-teal-500" data-i18n="welcome">
+                English Learning Adventure
+            </h1>
+            <p id="login-error" class="text-red-500 mb-4 hidden"></p>
+            <input id="email" type="email" placeholder="Email" class="input-field" data-i18n-placeholder="email" onkeydown="if(event.key==='Enter') window.handleLoginClick()">
+            <div class="password-container mb-6">
+                <input id="password" type="password" placeholder="Password" class="input-field mb-0" data-i18n-placeholder="password" onkeydown="if(event.key==='Enter') window.handleLoginClick()">
+                <span class="password-toggle"><i class="fas fa-eye"></i></span>
+            </div>
+            <button id="login-btn" onclick="window.handleLoginClick()" class="btn btn-primary w-full mb-4">
+                <i class="fas fa-sign-in-alt"></i>
+                <span class="btn-text" data-i18n="login">Login</span>
+                <svg class="animate-spin h-5 w-5 hidden btn-loader" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            </button>
+            <button id="register-btn" onclick="window.handleRegisterClick()" class="btn btn-secondary w-full mb-4">
+                <i class="fas fa-user-plus"></i>
+                <span data-i18n="createAccount">Create New Account</span>
+            </button>
+        </div>
+    </div>
+    
+    <div id="register-page" class="page hidden">
+        <div class="card">
+            <h1 class="text-2xl md:text-3xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-teal-500" data-i18n="createAccountTitle">
+                Create Student Account
+            </h1>
+            <p id="register-error" class="text-red-500 mb-4 hidden"></p>
+            <input id="register-username" type="text" placeholder="Username" class="input-field" data-i18n-placeholder="username">
+            <input id="register-email" type="email" placeholder="Email" class="input-field" data-i18n-placeholder="email">
+            <div class="password-container mb-6">
+                <input id="register-password" type="password" placeholder="Password" class="input-field mb-0" data-i18n-placeholder="password">
+                <span class="password-toggle"><i class="fas fa-eye"></i></span>
+            </div>
+            <button id="create-account-btn" onclick="window.handleCreateAccountClick()" class="btn btn-primary w-full mb-4">
+                <i class="fas fa-user-check"></i>
+                <span class="btn-text" data-i18n="createAccount">Create Account</span>
+                <svg class="animate-spin h-5 w-5 hidden btn-loader" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            </button>
+            <a href="#" id="back-to-login" onclick="window.handleBackToLoginClick(); return false;" class="text-gray-500 hover:underline flex items-center justify-center">
+                <i class="fas fa-arrow-left mr-2"></i> 
+                <span data-i18n="backToLogin">Back to Login</span>
+            </a>
+        </div>
+    </div>
+    
+    <div id="grade-selection-page" class="page hidden">
+        <div class="card">
+            <h1 class="text-3xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-teal-500" data-i18n="chooseGrade">
+                Choose Your Grade Level
+            </h1>
+            <div class="space-y-6">
+                <button data-grade="first" class="grade-btn btn btn-primary w-full py-4 text-xl"><i class="fas fa-star mr-2"></i> <span data-i18n="firstPreparatory">First Preparatory</span></button>
+                <button data-grade="second" class="grade-btn btn btn-primary w-full py-4 text-xl"><i class="fas fa-star mr-2"></i> <span data-i18n="secondPreparatory">Second Preparatory</span></button>
+                <button data-grade="third" class="grade-btn btn btn-primary w-full py-4 text-xl"><i class="fas fa-star mr-2"></i> <span data-i18n="thirdPreparatory">Third Preparatory</span></button>
+            </div>
+            <div class="mt-10 border-t pt-6">
+                 <button id="student-logout-btn" class="btn btn-danger w-full"><i class="fas fa-sign-out-alt mr-2"></i> <span data-i18n="logout">Logout</span></button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="student-stages-page" class="page hidden p-0">
+        <div class="w-full h-screen flex flex-col">
+            <header class="flex justify-between items-center p-4 bg-white/80 backdrop-blur-sm shadow-md w-full z-10">
+                <h2 class="text-xl font-bold" style="color: var(--primary-dark);"><i class="fas fa-user-circle mr-2"></i><span data-i18n="welcomeStudent">Welcome,</span> <span id="student-name"></span></h2>
+                <div class="flex items-center gap-2 md:gap-4">
+                    <div id="student-coins" class="text-lg md:text-xl font-bold text-yellow-600 bg-yellow-100 px-3 py-2 rounded-full shadow-inner"><i class="fas fa-coins mr-2"></i><span class="coins-count">0</span></div>
+                    <button id="leaderboard-btn" class="btn btn-sm md:btn-md" style="background: linear-gradient(45deg, #FFD700, #FFA500); color: white; box-shadow: 0 4px 0 0 #D4AF37;"><i class="fas fa-trophy"></i></button>
+                    <button id="shop-btn" class="btn btn-sm md:btn-md" style="background: var(--accent-color); color: white; box-shadow: 0 4px 0 0 hsl(var(--accent-hue), 95%, 45%);"><i class="fas fa-store"></i></button>
+                    <button id="back-to-grades" class="btn btn-secondary btn-sm md:btn-md"><i class="fas fa-exchange-alt"></i></button>
+                    <button id="main-logout-btn" class="btn btn-danger btn-sm md:btn-md"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+            </header>
+            <div id="stages-path-container">
+                </div>
+        </div>
+    </div>
+    
+    <div id="teacher-dashboard-page" class="page hidden">
+        <div class="container mx-auto text-center w-full max-w-4xl">
+            <h1 class="text-4xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-teal-500" data-i18n="teacherDashboard">Teacher Dashboard</h1>
+            <div class="bg-white/90 p-8 rounded-2xl shadow-lg backdrop-blur-sm">
+                <h2 class="text-2xl font-bold mb-6" data-i18n="studentStats">Student Statistics</h2>
+                <div id="stats-container"><p data-i18n="loadingStats">Loading statistics...</p></div>
+                <button id="reset-stats-btn" class="btn btn-danger mt-8"><i class="fas fa-redo mr-2"></i> <span data-i18n="resetStats">Reset All Statistics</span></button>
+            </div>
+            <div class="mt-8 flex gap-4 justify-center">
+                <button id="teacher-play-game-btn" class="btn btn-primary"><i class="fas fa-gamepad mr-2"></i> <span data-i18n="tryGame">Try Game</span></button>
+                <button id="teacher-logout-btn" class="btn btn-secondary"><i class="fas fa-sign-out-alt mr-2"></i> <span data-i18n="logout">Logout</span></button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="admin-cms-page" class="page hidden">
+       <div class="container mx-auto w-full max-w-4xl py-8">
+            <h1 class="text-4xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-teal-500 text-center" data-i18n="cmsTitle">Curriculum Management System (CMS)</h1>
+            
+            <div class="bg-white/90 p-8 rounded-2xl shadow-lg backdrop-blur-sm space-y-6 mb-8 text-left">
+                <h2 class="text-2xl font-bold text-center" data-i18n="githubConfig"><i class="fab fa-github mr-2"></i>GitHub Configuration</h2>
+                <p class="text-sm text-gray-600" data-i18n="githubConfigNote">These settings are required for the file upload feature and are saved locally in your browser.</p>
+                <div>
+                    <label for="github-username" class="block font-bold mb-2">GitHub Username:</label>
+                    <input type="text" id="github-username" class="input-field" placeholder="e.g., mohamed-ali">
+                </div>
+                <div>
+                    <label for="github-repo" class="block font-bold mb-2">Repository Name:</label>
+                    <input type="text" id="github-repo" class="input-field" placeholder="e.g., my-game-assets">
+                </div>
+                <div>
+                    <label for="github-token" class="block font-bold mb-2">Personal Access Token (classic):</label>
+                    <input type="password" id="github-token" class="input-field" placeholder="ghp_xxxxxxxxxxxxxxxxx">
+                </div>
+                <button id="save-github-config-btn" class="btn btn-primary w-full"><i class="fas fa-save mr-2"></i> <span data-i18n="saveConfig">Save Configuration</span></button>
+            </div>
+
+            <div class="bg-white/90 p-8 rounded-2xl shadow-lg backdrop-blur-sm space-y-6 mb-8">
+                <h2 class="text-2xl font-bold" data-i18n="curriculumStages"><i class="fas fa-book-open mr-2"></i>Curriculum Stages</h2>
+                <div>
+                    <label for="cms-grade-select" class="block text-xl font-bold mb-2" data-i18n="selectGrade">Select Grade to Edit:</label>
+                    <select id="cms-grade-select" class="input-field">
+                        <option value="first" data-i18n="firstPreparatory">First Preparatory</option>
+                        <option value="second" data-i18n="secondPreparatory">Second Preparatory</option>
+                        <option value="third" data-i18n="thirdPreparatory">Third Preparatory</option>
+                    </select>
+                </div>
+                <hr>
+                <div id="stages-editor"></div>
+            </div>
+             <div class="bg-white/90 p-8 rounded-2xl shadow-lg backdrop-blur-sm space-y-6 mb-8">
+                <h2 class="text-2xl font-bold" data-i18n="gameInfoManagement"><i class="fas fa-info-circle mr-2"></i>Game Info Management</h2>
+                <div>
+                    <label for="game-info-en" class="block font-bold mb-2">Game Info (English):</label>
+                    <textarea id="game-info-en" class="input-field h-32" placeholder="Enter game information in English"></textarea>
+                </div>
+                 <div>
+                    <label for="game-info-ar" class="block font-bold mb-2">Game Info (Arabic):</label>
+                    <textarea id="game-info-ar" class="input-field h-32" placeholder="أدخل معلومات اللعبة باللغة العربية"></textarea>
+                </div>
+                <button id="save-info-btn" class="btn btn-primary w-full"><i class="fas fa-save mr-2"></i> <span data-i18n="saveInfo">Save Game Info</span></button>
+            </div>
+             <div class="bg-white/90 p-8 rounded-2xl shadow-lg backdrop-blur-sm space-y-6 mb-8">
+                <h2 class="text-2xl font-bold" data-i18n="shopPriceManagement"><i class="fas fa-tags mr-2"></i>Shop Price Management</h2>
+                <div id="shop-price-manager" class="space-y-4 text-left"></div>
+                <button id="save-prices-btn" class="btn btn-primary w-full"><i class="fas fa-save mr-2"></i> <span data-i18n="savePrices">Save Prices</span></button>
+            </div>
+            <div class="bg-white/90 p-8 rounded-2xl shadow-lg backdrop-blur-sm space-y-6">
+                <h2 class="text-2xl font-bold" data-i18n="soundManagement"><i class="fas fa-volume-up mr-2"></i>Game Sound Management</h2>
+                <p class="text-sm text-gray-500" data-i18n="soundNote">Note: Control sound volume below. You can paste direct links or upload files to GitHub (requires setup).</p>
+                <div id="sound-url-manager" class="space-y-4 text-left"></div>
+                <button id="save-sounds-btn" class="btn btn-primary w-full"><i class="fas fa-save mr-2"></i> <span data-i18n="saveSounds">Save Sound URLs</span></button>
+            </div>
+            <div class="mt-8 flex gap-4 justify-center">
+                <button id="admin-play-game-btn" class="btn btn-primary"><i class="fas fa-gamepad mr-2"></i> <span data-i18n="tryGame">Try Game</span></button>
+                <button id="admin-logout-btn" class="btn btn-secondary"><i class="fas fa-sign-out-alt mr-2"></i> <span data-i18n="logout">Logout</span></button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="vocabulary-page" class="page hidden">
+        <div class="container mx-auto text-center w-full max-w-4xl py-8">
+            <h1 id="vocab-title" class="text-4xl md:text-5xl font-bold mb-10 text-white" style="text-shadow: 2px 2px 5px rgba(0,0,0,0.3);">Stage Words</h1>
+            <div id="vocab-grid" class="vocab-grid"></div>
+            <button id="start-stage-btn" class="btn btn-primary mt-12 text-2xl py-4 px-8"><i class="fas fa-play-circle mr-3"></i><span data-i18n="startStage">Start Activities</span></button>
+        </div>
+    </div>
+    
+    <div id="game-page" class="page hidden">
+        <div class="container mx-auto text-center w-full max-w-3xl">
+            <div id="activity-header" class="flex justify-between items-center mb-4 text-2xl font-bold">
+                <div id="timer-display" class="hidden"><i class="fas fa-clock mr-2"></i><span id="timer-countdown"></span></div>
+                <div id="activity-coins" class="text-xl font-bold text-yellow-600 bg-yellow-100 px-4 py-2 rounded-full shadow-inner"><i class="fas fa-coins mr-2"></i><span class="coins-count">0</span></div>
+                <button id="pause-game-btn" class="btn btn-warning"><i class="fas fa-pause"></i></button>
+                <button id="activity-shop-btn" class="btn" style="background: var(--accent-color); color: white; box-shadow: 0 4px 0 0 hsl(var(--accent-hue), 95%, 45%);"><i class="fas fa-store"></i></button>
+                <div id="inventory-display"></div>
+            </div>
+            <div id="activity-container" class="bg-white/90 p-6 md:p-8 rounded-2xl shadow-lg relative backdrop-blur-sm min-h-[400px]"></div>
+             <button id="back-to-stages" class="btn btn-secondary mt-8"><i class="fas fa-arrow-left mr-2"></i> <span data-i18n="backToStages">Back to Stages</span></button>
+        </div>
+    </div>
+    
+    <div id="stage-modal" class="modal hidden">
+        <div class="card">
+            <h2 id="stage-modal-title" class="text-2xl font-bold mb-6"></h2>
+            <input id="stage-name-input" type="text" placeholder="Stage Name" class="input-field" data-i18n-placeholder="stageName">
+            <div class="flex gap-4">
+                <button id="save-stage-btn" class="btn btn-primary flex-1"><i class="fas fa-save mr-2"></i> <span data-i18n="save">Save</span></button>
+                <button id="cancel-stage-btn" class="btn btn-secondary flex-1"><i class="fas fa-times mr-2"></i> <span data-i18n="cancel">Cancel</span></button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="activity-modal" class="modal hidden">
+        <div class="card w-full max-w-lg overflow-y-auto max-h-[90vh]">
+             <h2 id="activity-modal-title" class="text-2xl font-bold mb-4" data-i18n="addNewActivityTitle"></h2>
+             <select id="activity-type-select" class="input-field">
+                <option value="" data-i18n="selectActivityType">-- Select Activity Type --</option>
+                <option value="multiple_choice" data-i18n="multipleChoice">Multiple Choice</option>
+                <option value="complete_sentence" data-i18n="completeSentence">Complete Sentence</option>
+                <option value="matching" data-i18n="matching">Matching</option>
+                <option value="color_word" data-i18n="colorWord">Color the Word</option>
+                <option value="arrange_words" data-i18n="arrangeWords">Arrange Words</option>
+                <option value="trace_word" data-i18n="traceWord">Trace Word</option>
+                <option value="pronunciation" data-i18n="pronunciation">Pronunciation</option>
+             </select>
+             <div id="activity-form-container"></div>
+             <div class="flex gap-4 mt-6">
+                <button id="save-activity-btn" class="btn btn-primary flex-1">
+                    <i class="fas fa-save mr-2"></i>
+                    <span class="btn-text" data-i18n="saveActivity">Save Activity</span>
+                    <svg class="animate-spin h-5 w-5 hidden btn-loader" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                </button>
+                <button id="cancel-activity-btn" class="btn btn-secondary flex-1"><i class="fas fa-times mr-2"></i> <span data-i18n="cancel">Cancel</span></button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="vocab-modal" class="modal hidden">
+        <div class="card w-full max-w-lg">
+            <h2 class="text-2xl font-bold mb-4" data-i18n="editVocabulary">Edit Vocabulary</h2>
+            <div id="vocab-editor-list" class="space-y-3 max-h-[50vh] overflow-y-auto p-2 bg-slate-50 rounded-lg"></div>
+            <button id="add-vocab-word-btn" class="btn btn-secondary w-full my-4"><i class="fas fa-plus mr-2"></i> <span data-i18n="addWord">Add Word</span></button>
+            <div class="flex gap-4 mt-6">
+                <button id="save-vocab-btn" class="btn btn-primary flex-1"><i class="fas fa-save mr-2"></i> <span data-i18n="save">Save</span></button>
+                <button id="cancel-vocab-btn" class="btn btn-secondary flex-1"><i class="fas fa-times mr-2"></i> <span data-i18n="cancel">Cancel</span></button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="confirm-modal" class="modal hidden">
+        <div class="card">
+            <h2 id="confirm-modal-title" class="text-2xl font-bold mb-4" data-i18n="confirmTitle">Are You Sure?</h2>
+            <p id="confirm-modal-text" class="mb-6"></p>
+            <div class="flex gap-4">
+                <button id="confirm-modal-yes" class="btn btn-danger flex-1"><i class="fas fa-check mr-2"></i> <span data-i18n="yes">Yes</span></button>
+                <button id="confirm-modal-no" class="btn btn-secondary flex-1"><i class="fas fa-times mr-2"></i> <span data-i18n="no">No</span></button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="shop-modal" class="modal hidden">
+        <div class="card">
+            <h2 class="text-3xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-orange-500" data-i18n="shop">Shop</h2>
+            <div id="shop-items-container" class="space-y-4"></div>
+            <button id="close-shop-btn" class="btn btn-secondary mt-8 w-full"><i class="fas fa-times mr-2"></i><span data-i18n="close">Close</span></button>
+        </div>
+    </div>
+
+    <div id="encouragement-modal" class="modal hidden">
+        <div class="card encouragement-card animate-bounce-in">
+            <div id="encouragement-icon-container" class="relative flex items-center justify-center"></div>
+            <p id="encouragement-message" class="text-2xl"></p>
+        </div>
+    </div>
+
+    <div id="info-modal" class="modal hidden">
+        <div class="card">
+            <h2 data-i18n="gameInfo">Game Info</h2>
+            <p id="info-modal-text"></p>
+            <button id="close-info-btn" onclick="window.closeInfoModal()" class="btn btn-secondary mt-8 w-full"><i class="fas fa-times mr-2"></i><span data-i18n="close">Close</span></button>
+        </div>
+    </div>
+
+    <div id="pause-modal" class="modal hidden">
+        <div class="card">
+            <h2 class="text-3xl font-bold mb-6" data-i18n="gamePaused">Game Paused</h2>
+            <button id="resume-game-btn" class="btn btn-primary w-full py-4 text-xl"><i class="fas fa-play mr-2"></i><span data-i18n="resume">Resume</span></button>
+        </div>
+    </div>
+
+    <div id="media-library-modal" class="modal hidden">
+         <div class="card w-full max-w-4xl">
+            <h2 class="text-2xl font-bold mb-4" data-i18n="mediaLibrary">Media Library</h2>
+            <div id="media-library-grid" class="vocab-grid max-h-[70vh] overflow-y-auto p-4">
+                <div class="loader"></div>
+            </div>
+            <button id="close-library-btn" class="btn btn-secondary mt-6"><i class="fas fa-times mr-2"></i><span data-i18n="close">Close</span></button>
+        </div>
+    </div>
+    
+    <div id="leaderboard-modal" class="modal hidden">
+        <div class="card">
+            <h2 id="leaderboard-title" data-i18n="leaderboard">Leaderboard</h2>
+            <ul id="leaderboard-list">
+                <!-- Leaderboard items will be injected here -->
+            </ul>
+            <div id="current-user-rank-info" class="hidden"></div>
+            <button id="close-leaderboard-btn" class="btn btn-secondary mt-6 w-full"><i class="fas fa-times mr-2"></i><span data-i18n="close">Close</span></button>
+        </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
