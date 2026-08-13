@@ -1,4 +1,4 @@
-        :root {
+:root {
             --primary-hue: 250; /* Purple */
             --secondary-hue: 180; /* Teal */
             --accent-hue: 30; /* Orange */
@@ -85,7 +85,10 @@
             position: relative; z-index: 1;
         }
         .page.hidden { display: none; }
-        
+        /* .hidden previously came ONLY from the Tailwind CDN. If that CDN is slow or blocked,
+           every modal would flash open at once. Defined locally so hiding never depends on it. */
+        .hidden { display: none !important; }
+
         .card {
             background-color: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
@@ -256,9 +259,6 @@
             z-index: 1000; padding: 1rem; 
             backdrop-filter: blur(8px);
             animation: fadeIn 0.3s ease-out;
-        }
-        .modal.hidden {
-            display: none !important;
         }
         .modal .card { animation: scaleIn 0.4s ease-out; }
         
@@ -529,6 +529,67 @@
             0%{background-position:0% 50%}
             50%{background-position:100% 50%}
             100%{background-position:0% 50%}
+        }
+
+        /* --- Game Info modal content --- */
+        #info-modal-body {
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 0 0.25rem;
+            -webkit-overflow-scrolling: touch;
+        }
+        #info-modal-body::-webkit-scrollbar { width: 8px; }
+        #info-modal-body::-webkit-scrollbar-thumb {
+            background: var(--secondary-color);
+            border-radius: 8px;
+        }
+        #info-modal-default {
+            text-align: right;
+            font-family: 'Cairo', sans-serif;
+            color: #2c3e50;
+            line-height: 2;
+            font-size: 1.05rem;
+        }
+        #info-modal-default .info-meta {
+            background: rgba(255, 255, 255, 0.75);
+            border-radius: 18px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.25rem;
+            border: 2px dashed var(--secondary-color);
+        }
+        #info-modal-default .info-meta p { margin: 0.35rem 0; }
+        #info-modal-default .info-label {
+            font-weight: 700;
+            color: var(--secondary-color);
+        }
+        #info-modal-default .info-para { margin-bottom: 1rem; text-align: right; }
+        #info-modal-default .info-subhead {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-align: right;
+        }
+        #info-modal-default .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 1.25rem 0;
+        }
+        #info-modal-default .info-list li {
+            position: relative;
+            padding-right: 1.75rem;
+            margin-bottom: 0.75rem;
+            text-align: right;
+        }
+        #info-modal-default .info-list li::before {
+            content: "★";
+            position: absolute;
+            right: 0;
+            top: 0;
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+        }
+        @media (max-width: 600px) {
+            #info-modal-body { max-height: 55vh; }
+            #info-modal-default { font-size: 0.95rem; line-height: 1.9; }
         }
 
         #info-modal .card {
