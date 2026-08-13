@@ -26,7 +26,7 @@
             if (m) m.classList.add('hidden');
         };
     </script>
-    <link rel="stylesheet" href="style.css?v=2.0">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <audio id="background-music" loop></audio>
@@ -326,7 +326,43 @@
     <div id="info-modal" class="modal hidden">
         <div class="card">
             <h2 data-i18n="gameInfo">Game Info</h2>
-            <p id="info-modal-text"></p>
+
+            <div id="info-modal-body">
+                <!-- Custom text from the Admin CMS (Game Info Management). Shown INSTEAD of the
+                     default content below whenever the admin has saved something there. -->
+                <p id="info-modal-text" class="hidden"></p>
+
+                <!-- Default built-in content (Arabic, shown in both language modes by design). -->
+                <div id="info-modal-default" dir="rtl" lang="ar">
+                    <div class="info-meta">
+                        <p><span class="info-label">إعداد المعلمتين:</span> هاشمية آل علوي &nbsp;•&nbsp; هناء المروي</p>
+                        <p><span class="info-label">الفئة المستهدفة:</span> طالبات المرحلة التأهيلية (الإعاقة الفكرية)</p>
+                    </div>
+
+                    <p class="info-para">
+                        يستند هذا التطبيق التعليمي إلى مبادئ التعليم المبرمج للعالم بورهوس فريدريك سكنر
+                        (B.F. Skinner)، الذي يُعَد من رواد المدرسة السلوكية. يقوم التعليم المبرمج على تقسيم
+                        المادة العلمية إلى خطوات صغيرة متسلسلة، بحيث تُقدَّم للمتعلم/ـة بترتيب منطقي يتيح
+                        له/ـا الانتقال التدريجي من مرحلة إلى أخرى.
+                    </p>
+
+                    <p class="info-para info-subhead">يعتمد هذا النموذج على:</p>
+                    <ul class="info-list">
+                        <li><span class="info-label">التدرج المنظم للمحتوى:</span> حيث تُجزأ المعرفة إلى وحدات صغيرة سهلة الفهم.</li>
+                        <li><span class="info-label">التعلم الذاتي:</span> فالطالبة تتحكم في سرعة تعلمها وتكرار المحاولات حسب قدراتها.</li>
+                        <li><span class="info-label">التغذية الراجعة الفورية:</span> عند إتمام كل مرحلة تحصل الطالبة على تعزيز إيجابي يساعدها على ترسيخ التعلم.</li>
+                        <li><span class="info-label">الانتقال الشرطي:</span> لا تنتقل الطالبة إلى المرحلة التالية إلا بعد إتقان المرحلة السابقة، مما يضمن بناء معرفة تراكمية متينة.</li>
+                    </ul>
+
+                    <p class="info-para">
+                        إن تطبيق هذه المبادئ في مادة اللغة الإنجليزية يُمكّن الطالبات من التعلم بخطوات واضحة،
+                        ومواجهة التحديات وفق مستوى قدراتهن، مع ضمان تحقيق الفهم والإتقان قبل الانتقال إلى
+                        مستوى أعلى. وبذلك يتحقق الدمج بين الجانب العلمي المستند إلى نظريات التعلم الحديثة،
+                        والجانب العملي الذي يراعي احتياجات طالبات التربية الخاصة.
+                    </p>
+                </div>
+            </div>
+
             <button id="close-info-btn" onclick="window.closeInfoModal()" class="btn btn-secondary mt-8 w-full"><i class="fas fa-times mr-2"></i><span data-i18n="close">Close</span></button>
         </div>
     </div>
